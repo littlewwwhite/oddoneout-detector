@@ -1,0 +1,5 @@
+{
+  "name": "OddOneOut Detector",
+  "description": "An AI-powered tool that automatically detects the anomaly (different color, shape, or pattern) in a grid of objects and highlights it.",
+  "requestFramePermissions": []
+}
