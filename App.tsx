@@ -234,7 +234,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Right Column: Controls & Logs (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-6 h-[calc(100vh-8rem)] min-h-[500px]">
+        <div className="lg:col-span-4 flex flex-col gap-4 h-[calc(100vh-8rem)] min-h-[500px]">
           
           {/* 1. Upload & Queue Status */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
