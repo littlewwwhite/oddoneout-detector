@@ -10,6 +10,7 @@ import { AppState, DetectionResult, Language, HistoryItem, LogEntry } from './ty
 import { Grid, Languages, Plus, History, ChevronLeft, ChevronRight, Settings, BookOpen } from 'lucide-react';
 import { getT } from './constants/translations';
 import { SettingsModal } from './components/SettingsModal';
+import { TutorialModal } from './components/TutorialModal';
 import { isApiConfigured } from './services/configService';
 
 const App: React.FC = () => {
@@ -23,6 +24,7 @@ const App: React.FC = () => {
   const [isProcessingQueue, setIsProcessingQueue] = useState(false);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(!isApiConfigured());
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
   // Load history from localStorage and preload cache index on mount
   useEffect(() => {
@@ -227,7 +229,7 @@ const App: React.FC = () => {
           
           <div className="flex items-center gap-4">
              <button
-              onClick={() => window.open('https://github.com/littlewwwhite/oddoneout-detector#readme', '_blank')}
+              onClick={() => setTutorialOpen(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-slate-100 transition-all text-sm font-medium text-slate-600 hover:text-indigo-600 border border-transparent hover:border-slate-200"
               aria-label="Open tutorial"
             >
@@ -365,7 +367,7 @@ const App: React.FC = () => {
       >
         <div className="flex flex-col items-center gap-3">
           <ChevronRight className="w-5 h-5 group-hover:scale-125 transition-transform" />
-          <span className="text-[10px] font-bold tracking-widest uppercase [writing-mode:vertical-rl] rotate-180 text-slate-400 group-hover:text-indigo-600 transition-colors">{t.history}</span>
+          <span className="text-[10px] font-bold tracking-widest uppercase [writing-mode:vertical-rl] text-slate-400 group-hover:text-indigo-600 transition-colors">{t.history}</span>
           {history.length > 0 && (
             <span className="bg-indigo-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md shadow-indigo-200">{history.length}</span>
           )}
@@ -379,6 +381,9 @@ const App: React.FC = () => {
 
       {/* Settings Modal */}
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} t={t} />
+
+      {/* Tutorial Modal */}
+      <TutorialModal isOpen={tutorialOpen} onClose={() => setTutorialOpen(false)} t={t} />
     </div>
   );
 };
