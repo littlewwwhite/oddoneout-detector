@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
 
 jobs:
   build-windows:
@@ -29,8 +34,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tauriScript: bunx tauri
-          tagName: ${{ github.ref_name }}
-          releaseName: 'OddOneOut Detector ${{ github.ref_name }}'
+          tagName: ${{ github.event.inputs.version || github.ref_name }}
+          releaseName: 'OddOneOut Detector ${{ github.event.inputs.version || github.ref_name }}'
           releaseBody: 'Windows installer for OddOneOut Detector'
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
