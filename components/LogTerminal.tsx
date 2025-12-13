@@ -19,8 +19,8 @@ export const LogTerminal: React.FC<LogTerminalProps> = ({ logs, lang }) => {
   }, [logs]);
 
   return (
-    <div className="bg-slate-900 rounded-[1.5rem] overflow-hidden shadow-xl shadow-slate-900/10 border border-slate-800 flex flex-col flex-1 min-h-0 ring-4 ring-slate-100">
-      <div className="bg-slate-950/50 px-4 py-3 flex items-center justify-between border-b border-slate-800 backdrop-blur">
+    <div className="bg-slate-900 rounded-[1.5rem] overflow-hidden shadow-xl shadow-slate-900/10 border border-slate-800 flex flex-col min-h-[280px] max-h-[400px] ring-4 ring-slate-100">
+      <div className="bg-slate-950/50 px-4 py-3 flex items-center justify-between border-b border-slate-800 backdrop-blur flex-shrink-0">
         <div className="flex items-center gap-2.5 text-slate-400 text-xs font-bold tracking-wider uppercase">
           <Terminal className="w-3.5 h-3.5 text-indigo-400" />
           <span>{t.logs}</span>
@@ -31,7 +31,7 @@ export const LogTerminal: React.FC<LogTerminalProps> = ({ logs, lang }) => {
           <div className="w-2.5 h-2.5 rounded-full bg-slate-700 hover:bg-emerald-500 transition-colors" />
         </div>
       </div>
-      <div className="flex-1 p-4 overflow-y-auto font-mono text-[11px] space-y-1.5 custom-scrollbar bg-slate-900/50 leading-relaxed">
+      <div className="flex-1 p-4 overflow-y-auto font-mono text-[11px] space-y-1.5 custom-scrollbar bg-slate-900/50 leading-relaxed min-h-0">
         {logs.length === 0 && (
           <div className="text-slate-600 italic pl-1 flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-slate-700 rounded-full animate-pulse" />

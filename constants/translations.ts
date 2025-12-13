@@ -41,7 +41,8 @@ export const TRANSLATIONS = {
     modelHint: "Vision model with image understanding capability",
     cancel: "Cancel",
     save: "Save",
-    saved: "Saved!"
+    saved: "Saved!",
+    tutorial: "Tutorial"
   },
   zh: {
     title: "AI 药丸💊异常判断",
@@ -83,7 +84,8 @@ export const TRANSLATIONS = {
     modelHint: "支持图像理解的视觉模型",
     cancel: "取消",
     save: "保存",
-    saved: "已保存!"
+    saved: "已保存!",
+    tutorial: "使用教程"
   }
 };
 

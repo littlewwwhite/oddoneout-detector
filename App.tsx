@@ -7,7 +7,7 @@ import { AnomalyDetail } from './components/AnomalyDetail';
 import { detectAnomaly } from './services/openrouterService';
 import { findCachedResult, loadCacheIndex } from './services/cacheService';
 import { AppState, DetectionResult, Language, HistoryItem, LogEntry } from './types';
-import { Grid, Languages, Plus, History, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { Grid, Languages, Plus, History, ChevronLeft, ChevronRight, Settings, BookOpen } from 'lucide-react';
 import { getT } from './constants/translations';
 import { SettingsModal } from './components/SettingsModal';
 import { isApiConfigured } from './services/configService';
@@ -227,6 +227,14 @@ const App: React.FC = () => {
           
           <div className="flex items-center gap-4">
              <button
+              onClick={() => window.open('https://github.com/littlewwwhite/oddoneout-detector#readme', '_blank')}
+              className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-slate-100 transition-all text-sm font-medium text-slate-600 hover:text-indigo-600 border border-transparent hover:border-slate-200"
+              aria-label="Open tutorial"
+            >
+               <BookOpen className="w-4 h-4" />
+               {t.tutorial}
+             </button>
+             <button
               onClick={() => setSettingsOpen(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-slate-100 transition-all text-sm font-medium text-slate-600 hover:text-indigo-600 border border-transparent hover:border-slate-200"
             >
@@ -279,10 +287,10 @@ const App: React.FC = () => {
         </div>
 
         {/* Right Column: Controls & Logs (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-6 h-[calc(100vh-9rem)] min-h-[600px]">
-          
+        <div className="lg:col-span-4 flex flex-col gap-6 h-[calc(100vh-9rem)] min-h-[600px] overflow-y-auto">
+
           {/* 1. Upload & Queue Status */}
-          <div className="bg-white/80 backdrop-blur-sm p-5 rounded-[1.5rem] border border-white/60 shadow-lg shadow-indigo-100/40">
+          <div className="bg-white/80 backdrop-blur-sm p-5 rounded-[1.5rem] border border-white/60 shadow-lg shadow-indigo-100/40 flex-shrink-0">
              <div className="flex justify-between items-center mb-4">
                <h3 className="font-bold text-slate-700 tracking-tight">{t.queue}</h3>
                {queue.length > 0 && (
