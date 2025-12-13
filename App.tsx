@@ -5,9 +5,12 @@ import { LogTerminal } from './components/LogTerminal';
 import { HistoryList } from './components/HistoryList';
 import { AnomalyDetail } from './components/AnomalyDetail';
 import { detectAnomaly } from './services/openrouterService';
+import { findCachedResult, loadCacheIndex } from './services/cacheService';
 import { AppState, DetectionResult, Language, HistoryItem, LogEntry } from './types';
-import { Grid, Languages, Plus, History, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Grid, Languages, Plus, History, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 import { getT } from './constants/translations';
+import { SettingsModal } from './components/SettingsModal';
+import { isApiConfigured } from './services/configService';
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('zh'); // Default to Chinese
@@ -19,9 +22,13 @@ const App: React.FC = () => {
   const [currentHistoryId, setCurrentHistoryId] = useState<string | null>(null);
   const [isProcessingQueue, setIsProcessingQueue] = useState(false);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(!isApiConfigured());
 
-  // Load history from localStorage on mount
+  // Load history from localStorage and preload cache index on mount
   useEffect(() => {
+    // Preload cache index for offline matching
+    loadCacheIndex();
+
     try {
       const savedHistory = localStorage.getItem('oddoneout-history');
       if (savedHistory) {
@@ -90,33 +97,63 @@ const App: React.FC = () => {
       setHistory(prev => [tempHistoryItem, ...prev]);
       setCurrentHistoryId(historyId);
 
-      // 2. Fake Processing Steps (Visual Flair)
-      addLog(`Preprocessing image (256x256 resizing)...`, 'info');
-      await new Promise(r => setTimeout(r, 300));
-      addLog(`Image normalized, applying color correction...`, 'info');
-      await new Promise(r => setTimeout(r, 250));
-      addLog(`Loading vision model weights...`, 'info');
-      await new Promise(r => setTimeout(r, 200));
-      addLog(`Running grid detection algorithm...`, 'warning');
-      await new Promise(r => setTimeout(r, 350));
-      addLog(`Analyzing cell patterns...`, 'warning');
+      // 2. Check cache first (for offline demo)
+      addLog(`Checking local cache...`, 'info');
+      const cached = await findCachedResult(base64);
 
-      // 3. API Call
-      const startTime = Date.now();
-      const result = await detectAnomaly(base64, lang);
-      const latency = Date.now() - startTime;
-      
-      addLog(`Model inference complete (${latency}ms).`, 'success');
-      if (result.found) {
-        addLog(`Anomaly detected at [${result.anomalyPosition?.row}, ${result.anomalyPosition?.col}]. Confidence: ${result.confidence}`, 'warning');
+      if (cached) {
+        // Cache hit - use pre-generated result
+        addLog(`Cache hit! Using pre-analyzed result.`, 'success');
+        await new Promise(r => setTimeout(r, 300)); // Brief delay for UX
+
+        const result = cached.result;
+        if (result.found) {
+          addLog(`Anomaly detected at [${result.anomalyPosition?.row}, ${result.anomalyPosition?.col}]. Confidence: ${result.confidence}`, 'warning');
+        } else {
+          addLog(`No anomaly detected. Perfect grid confirmed.`, 'success');
+        }
+
+        // Update history with cached result and pre-generated result image
+        setHistory(prev => prev.map(item =>
+          item.id === historyId ? {
+            ...item,
+            result: result,
+            imageSrc: cached.resultImageUrl, // Use pre-generated result image
+            status: 'success'
+          } : item
+        ));
       } else {
-        addLog(`No anomaly detected. Perfect grid confirmed.`, 'success');
-      }
+        // Cache miss - call API
+        addLog(`Cache miss. Calling vision API...`, 'info');
 
-      // 4. Update History Item with Result
-      setHistory(prev => prev.map(item => 
-        item.id === historyId ? { ...item, result: result, status: 'success' } : item
-      ));
+        // Fake Processing Steps (Visual Flair)
+        addLog(`Preprocessing image (256x256 resizing)...`, 'info');
+        await new Promise(r => setTimeout(r, 300));
+        addLog(`Image normalized, applying color correction...`, 'info');
+        await new Promise(r => setTimeout(r, 250));
+        addLog(`Loading vision model weights...`, 'info');
+        await new Promise(r => setTimeout(r, 200));
+        addLog(`Running grid detection algorithm...`, 'warning');
+        await new Promise(r => setTimeout(r, 350));
+        addLog(`Analyzing cell patterns...`, 'warning');
+
+        // API Call
+        const startTime = Date.now();
+        const result = await detectAnomaly(base64, lang);
+        const latency = Date.now() - startTime;
+
+        addLog(`Model inference complete (${latency}ms).`, 'success');
+        if (result.found) {
+          addLog(`Anomaly detected at [${result.anomalyPosition?.row}, ${result.anomalyPosition?.col}]. Confidence: ${result.confidence}`, 'warning');
+        } else {
+          addLog(`No anomaly detected. Perfect grid confirmed.`, 'success');
+        }
+
+        // Update History Item with Result
+        setHistory(prev => prev.map(item =>
+          item.id === historyId ? { ...item, result: result, status: 'success' } : item
+        ));
+      }
 
     } catch (err) {
       console.error(err);
@@ -167,30 +204,38 @@ const App: React.FC = () => {
   const currentItem = history.find(h => h.id === currentHistoryId);
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50/30 flex flex-col font-sans text-slate-900 selection:bg-indigo-500/30">
       
       {/* Navbar */}
-      <header className="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
-        <div className="max-w-[1600px] mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-50">
+        <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
           <button 
             onClick={() => setCurrentHistoryId(null)}
-            className="flex items-center gap-3 hover:opacity-90 transition-opacity focus:outline-none"
+            className="flex items-center gap-3 group focus:outline-none"
             aria-label="Go to home"
           >
-            <div className="bg-indigo-600 p-2 rounded-lg shadow-lg shadow-indigo-900/50">
+            <div className="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/30 group-hover:shadow-indigo-500/50 transition-all duration-300 group-hover:scale-105">
               <Grid className="w-5 h-5 text-white" />
             </div>
             <div className="text-left">
-              <h1 className="text-xl font-bold tracking-tight leading-none">Odd<span className="text-indigo-400">One</span>Out</h1>
-              <p className="text-[10px] text-slate-400 font-mono tracking-widest uppercase">{t.subtitle}</p>
+              <h1 className="text-xl font-bold tracking-tight text-slate-800 group-hover:text-indigo-900 transition-colors">
+                Odd<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-violet-500">One</span>Out
+              </h1>
+              <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">{t.subtitle}</p>
             </div>
           </button>
           
           <div className="flex items-center gap-4">
-            {/* Removed the Powered By Gemini component as requested */}
-             <button 
+             <button
+              onClick={() => setSettingsOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-slate-100 transition-all text-sm font-medium text-slate-600 hover:text-indigo-600 border border-transparent hover:border-slate-200"
+            >
+               <Settings className="w-4 h-4" />
+               {t.settings || 'Settings'}
+             </button>
+             <button
               onClick={() => setLang(prev => prev === 'en' ? 'zh' : 'en')}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-slate-100 transition-all text-sm font-medium text-slate-600 hover:text-indigo-600 border border-transparent hover:border-slate-200"
             >
                <Languages className="w-4 h-4" />
                {t.switchLang}
@@ -200,11 +245,11 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Dashboard Layout */}
-      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left Column: Visualizer (8 cols) */}
         <div
-          className="lg:col-span-8 flex flex-col h-[calc(100vh-8rem)] min-h-[500px]"
+          className="lg:col-span-8 flex flex-col h-[calc(100vh-9rem)] min-h-[600px]"
           onDrop={(e: React.DragEvent) => {
             e.preventDefault();
             const files = Array.from(e.dataTransfer.files).filter((f: File) => f.type.startsWith('image/'));
@@ -220,13 +265,13 @@ const App: React.FC = () => {
               lang={lang}
             />
           ) : (
-            <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center p-10 text-center animate-in fade-in zoom-in-95 duration-500">
-              <div className="bg-slate-50 p-6 rounded-full mb-6">
-                <Grid className="w-16 h-16 text-slate-300" />
+            <div className="flex-1 bg-white/60 backdrop-blur-sm rounded-[2rem] border border-white/50 shadow-xl shadow-indigo-100/50 flex flex-col items-center justify-center p-12 text-center animate-in fade-in zoom-in-95 duration-700">
+              <div className="bg-gradient-to-br from-white to-slate-50 p-8 rounded-full mb-8 shadow-inner border border-slate-100 ring-8 ring-white/50">
+                <Grid className="w-16 h-16 text-indigo-200" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-800 mb-2">{t.title}</h2>
-              <p className="text-slate-500 max-w-md mb-8">{t.uploadDesc}</p>
-              <div className="w-full max-w-md pointer-events-auto">
+              <h2 className="text-3xl font-bold text-slate-800 mb-3 tracking-tight">{t.title}</h2>
+              <p className="text-slate-500 max-w-md mb-10 text-lg leading-relaxed">{t.uploadDesc}</p>
+              <div className="w-full max-w-lg pointer-events-auto transform hover:scale-[1.01] transition-transform duration-300">
                  <UploadZone onFilesSelected={handleFilesSelected} lang={lang} />
               </div>
             </div>
@@ -234,33 +279,33 @@ const App: React.FC = () => {
         </div>
 
         {/* Right Column: Controls & Logs (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-4 h-[calc(100vh-8rem)] min-h-[500px]">
+        <div className="lg:col-span-4 flex flex-col gap-6 h-[calc(100vh-9rem)] min-h-[600px]">
           
           {/* 1. Upload & Queue Status */}
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div className="bg-white/80 backdrop-blur-sm p-5 rounded-[1.5rem] border border-white/60 shadow-lg shadow-indigo-100/40">
              <div className="flex justify-between items-center mb-4">
-               <h3 className="font-semibold text-slate-700">{t.queue}</h3>
+               <h3 className="font-bold text-slate-700 tracking-tight">{t.queue}</h3>
                {queue.length > 0 && (
-                 <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full animate-pulse font-medium">
+                 <span className="text-xs bg-indigo-500 text-white px-2.5 py-1 rounded-full animate-pulse font-bold shadow-md shadow-indigo-200">
                    {queue.length} pending
                  </span>
                )}
              </div>
              
              {/* Mini Upload Button */}
-             <div className="relative">
+             <div className="relative group">
                <input 
                   type="file" 
                   multiple 
                   accept="image/*" 
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                   onChange={(e) => {
                     if(e.target.files) handleFilesSelected(Array.from(e.target.files));
                   }}
                />
-               <button className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-lg flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md">
+               <button className="w-full py-3.5 bg-slate-900 group-hover:bg-indigo-600 text-white rounded-xl flex items-center justify-center gap-2.5 transition-all duration-300 shadow-md group-hover:shadow-indigo-200 group-active:scale-[0.98]">
                  <Plus className="w-4 h-4" />
-                 {t.uploadTitle}
+                 <span className="font-medium">{t.uploadTitle}</span>
                </button>
              </div>
           </div>
@@ -282,15 +327,15 @@ const App: React.FC = () => {
       </main>
 
       {/* History Sidebar */}
-      <div className={`fixed top-0 left-0 h-full bg-white border-r border-slate-200 shadow-xl z-50 transition-transform duration-300 ${historySidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{ width: '320px' }}>
+      <div className={`fixed top-0 left-0 h-full bg-white/95 backdrop-blur-xl border-r border-slate-200 shadow-2xl z-50 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${historySidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{ width: '340px' }}>
         <div className="h-full flex flex-col">
-          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-            <h3 className="font-semibold text-slate-700 flex items-center gap-2">
-              <History className="w-4 h-4" />
+          <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white/50">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2.5 text-lg">
+              <History className="w-5 h-5 text-indigo-500" />
               {t.history}
             </h3>
-            <button onClick={() => setHistorySidebarOpen(false)} className="p-1 hover:bg-slate-100 rounded">
-              <ChevronLeft className="w-5 h-5 text-slate-500" />
+            <button onClick={() => setHistorySidebarOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors group">
+              <ChevronLeft className="w-5 h-5 text-slate-400 group-hover:text-slate-700 transition-colors" />
             </button>
           </div>
           <div className="flex-1 overflow-hidden">
@@ -308,13 +353,13 @@ const App: React.FC = () => {
       {/* History Toggle Button */}
       <button
         onClick={() => setHistorySidebarOpen(true)}
-        className={`fixed left-0 top-1/2 -translate-y-1/2 bg-indigo-600 text-white px-2 py-6 rounded-r-xl shadow-lg hover:bg-indigo-700 transition-all z-40 ${historySidebarOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        className={`fixed left-0 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur border border-slate-200 text-indigo-600 pl-1 pr-1.5 py-6 rounded-r-2xl shadow-[4px_0_24px_-4px_rgba(0,0,0,0.1)] hover:pl-2 transition-all duration-300 z-40 group ${historySidebarOpen ? 'opacity-0 pointer-events-none translate-x-[-20px]' : 'opacity-100 translate-x-0'}`}
       >
-        <div className="flex flex-col items-center gap-2">
-          <ChevronRight className="w-5 h-5" />
-          <span className="text-sm font-medium [writing-mode:vertical-rl]">{t.history}</span>
+        <div className="flex flex-col items-center gap-3">
+          <ChevronRight className="w-5 h-5 group-hover:scale-125 transition-transform" />
+          <span className="text-[10px] font-bold tracking-widest uppercase [writing-mode:vertical-rl] rotate-180 text-slate-400 group-hover:text-indigo-600 transition-colors">{t.history}</span>
           {history.length > 0 && (
-            <span className="bg-white text-indigo-600 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{history.length}</span>
+            <span className="bg-indigo-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md shadow-indigo-200">{history.length}</span>
           )}
         </div>
       </button>
@@ -323,6 +368,9 @@ const App: React.FC = () => {
       {historySidebarOpen && (
         <div className="fixed inset-0 bg-black/20 z-40" onClick={() => setHistorySidebarOpen(false)} />
       )}
+
+      {/* Settings Modal */}
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} t={t} />
     </div>
   );
 };

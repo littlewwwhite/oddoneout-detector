@@ -1,0 +1,905 @@
+{
+  "version": "1.0",
+  "entries": {
+    "1ab28589017e8ee0a8c5c280fab7f1f1": {
+      "hash": "1ab28589017e8ee0a8c5c280fab7f1f1",
+      "filename": "IMG_20251127_182435.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 1,
+          "col": 3
+        },
+        "boundingBox": {
+          "ymin": 150,
+          "xmin": 440,
+          "ymax": 200,
+          "xmax": 520
+        },
+        "reason": "破损",
+        "description": "形状/破损不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_1ab28589017e8ee0a8c5c280fab7f1f1.jpg"
+    },
+    "9bd6c1f2870226a30fce7d5ba34724fe": {
+      "hash": "9bd6c1f2870226a30fce7d5ba34724fe",
+      "filename": "IMG_20251127_182459.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 3,
+          "col": 1
+        },
+        "boundingBox": {
+          "ymin": 525,
+          "xmin": 105,
+          "ymax": 555,
+          "xmax": 150
+        },
+        "reason": "破损",
+        "description": "该球表面有明显破损，与其他球不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_9bd6c1f2870226a30fce7d5ba34724fe.jpg"
+    },
+    "8a85e7f11ac9ac9e2b9e88b7dd1b07be": {
+      "hash": "8a85e7f11ac9ac9e2b9e88b7dd1b07be",
+      "filename": "IMG_20251127_182536.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 3,
+          "col": 2
+        },
+        "boundingBox": {
+          "ymin": 536,
+          "xmin": 318,
+          "ymax": 566,
+          "xmax": 358
+        },
+        "reason": "颜色不同",
+        "description": "该球颜色更鲜艳，与其他球颜色有差异",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_8a85e7f11ac9ac9e2b9e88b7dd1b07be.jpg"
+    },
+    "0d4d94e686d9a26d58a586d87661b042": {
+      "hash": "0d4d94e686d9a26d58a586d87661b042",
+      "filename": "IMG_20251127_182557.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 3,
+          "col": 4
+        },
+        "boundingBox": {
+          "ymin": 756,
+          "xmin": 822,
+          "ymax": 785,
+          "xmax": 860
+        },
+        "reason": "颜色/破损不同",
+        "description": "该物体颜色较深且有破损，与其他黄色小球不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_0d4d94e686d9a26d58a586d87661b042.jpg"
+    },
+    "331f2a757650ce4fef416deefcf9058b": {
+      "hash": "331f2a757650ce4fef416deefcf9058b",
+      "filename": "IMG_20251127_182616.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 2
+        },
+        "boundingBox": {
+          "ymin": 522,
+          "xmin": 472,
+          "ymax": 555,
+          "xmax": 518
+        },
+        "reason": "颜色不同",
+        "description": "该球颜色较其他球更浅",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_331f2a757650ce4fef416deefcf9058b.jpg"
+    },
+    "23fa6045df87711f650e245f73a2acb8": {
+      "hash": "23fa6045df87711f650e245f73a2acb8",
+      "filename": "IMG_20251127_182635.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 4,
+          "col": 1
+        },
+        "boundingBox": {
+          "ymin": 756,
+          "xmin": 87,
+          "ymax": 792,
+          "xmax": 135
+        },
+        "reason": "破损",
+        "description": "左下角小球有破损",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_23fa6045df87711f650e245f73a2acb8.jpg"
+    },
+    "555ceef8a4542c26bda0fec2f09f6252": {
+      "hash": "555ceef8a4542c26bda0fec2f09f6252",
+      "filename": "IMG_20251127_182653.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 4,
+          "col": 1
+        },
+        "boundingBox": {
+          "ymin": 756,
+          "xmin": 78,
+          "ymax": 793,
+          "xmax": 123
+        },
+        "reason": "破损",
+        "description": "该小球存在破损",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_555ceef8a4542c26bda0fec2f09f6252.jpg"
+    },
+    "d3a0c8a864fcd5173905978ed2942cb0": {
+      "hash": "d3a0c8a864fcd5173905978ed2942cb0",
+      "filename": "IMG_20251127_182718.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 4
+        },
+        "boundingBox": {
+          "ymin": 540,
+          "xmin": 810,
+          "ymax": 585,
+          "xmax": 895
+        },
+        "reason": "形状不同",
+        "description": "长条形物体",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_d3a0c8a864fcd5173905978ed2942cb0.jpg"
+    },
+    "17bdc80ba3f690a023111b9e3e113cd8": {
+      "hash": "17bdc80ba3f690a023111b9e3e113cd8",
+      "filename": "IMG_20251127_182745.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 3,
+          "col": 5
+        },
+        "boundingBox": {
+          "ymin": 568,
+          "xmin": 845,
+          "ymax": 602,
+          "xmax": 885
+        },
+        "reason": "颜色和状态不同",
+        "description": "该物体颜色较深且有破损，与其他黄色小球不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_17bdc80ba3f690a023111b9e3e113cd8.jpg"
+    },
+    "039a94540ba489c31e82e4fd49b4ac64": {
+      "hash": "039a94540ba489c31e82e4fd49b4ac64",
+      "filename": "IMG_20251127_182806.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 4
+        },
+        "boundingBox": {
+          "ymin": 555,
+          "xmin": 905,
+          "ymax": 590,
+          "xmax": 950
+        },
+        "reason": "周围有黄色粉末痕迹",
+        "description": "该小球周围有黄色粉末，与其他小球不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_039a94540ba489c31e82e4fd49b4ac64.jpg"
+    },
+    "e8dc35a55298926be471882e9ed0e2e4": {
+      "hash": "e8dc35a55298926be471882e9ed0e2e4",
+      "filename": "IMG_20251127_182824.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 4
+        },
+        "boundingBox": {
+          "ymin": 530,
+          "xmin": 840,
+          "ymax": 565,
+          "xmax": 895
+        },
+        "reason": "破损（有黄色粉末）",
+        "description": "第三行第五列小球有黄色粉末",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_e8dc35a55298926be471882e9ed0e2e4.jpg"
+    },
+    "d9a1808902c9faa23f7fdf2f8b6c718f": {
+      "hash": "d9a1808902c9faa23f7fdf2f8b6c718f",
+      "filename": "IMG_20251127_182853.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 4
+        },
+        "boundingBox": {
+          "ymin": 534,
+          "xmin": 841,
+          "ymax": 568,
+          "xmax": 885
+        },
+        "reason": "破损",
+        "description": "破损的小球",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_d9a1808902c9faa23f7fdf2f8b6c718f.jpg"
+    },
+    "0bdff4aafbb192e5c6caf19ae8af81b4": {
+      "hash": "0bdff4aafbb192e5c6caf19ae8af81b4",
+      "filename": "IMG_20251127_182943.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 4
+        },
+        "boundingBox": {
+          "ymin": 530,
+          "xmin": 840,
+          "ymax": 565,
+          "xmax": 885
+        },
+        "reason": "颜色/形状不同",
+        "description": "异类球",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_0bdff4aafbb192e5c6caf19ae8af81b4.jpg"
+    },
+    "2e2f22960a763572ffd45c020cb7cccf": {
+      "hash": "2e2f22960a763572ffd45c020cb7cccf",
+      "filename": "IMG_20251127_183003.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 4
+        },
+        "boundingBox": {
+          "ymin": 585,
+          "xmin": 840,
+          "ymax": 625,
+          "xmax": 885
+        },
+        "reason": "颜色和表面状态不同",
+        "description": "该球颜色较浅且表面有粉末脱落",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_2e2f22960a763572ffd45c020cb7cccf.jpg"
+    },
+    "50e5770170f09673d9bec733a109599a": {
+      "hash": "50e5770170f09673d9bec733a109599a",
+      "filename": "IMG_20251127_183026.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 4
+        },
+        "boundingBox": {
+          "ymin": 520,
+          "xmin": 880,
+          "ymax": 560,
+          "xmax": 930
+        },
+        "reason": "形状不同",
+        "description": "该小球形状与其他不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_50e5770170f09673d9bec733a109599a.jpg"
+    },
+    "530cceee69b3ca22118ae4a55a252698": {
+      "hash": "530cceee69b3ca22118ae4a55a252698",
+      "filename": "IMG_20251127_183055.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 4
+        },
+        "boundingBox": {
+          "ymin": 495,
+          "xmin": 865,
+          "ymax": 525,
+          "xmax": 915
+        },
+        "reason": "形状不同",
+        "description": "该物体形状与其他圆形物体不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_530cceee69b3ca22118ae4a55a252698.jpg"
+    },
+    "676ce0d738f209711bd19df9cf27f8e5": {
+      "hash": "676ce0d738f209711bd19df9cf27f8e5",
+      "filename": "IMG_20251127_183140.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 3,
+          "col": 5
+        },
+        "boundingBox": {
+          "ymin": 525,
+          "xmin": 855,
+          "ymax": 560,
+          "xmax": 900
+        },
+        "reason": "颜色和破损不同",
+        "description": "该物体颜色较深且表面有破损，与其他物体不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_676ce0d738f209711bd19df9cf27f8e5.jpg"
+    },
+    "e2bd31524cde2768570f7fb8c2ad66df": {
+      "hash": "e2bd31524cde2768570f7fb8c2ad66df",
+      "filename": "IMG_20251127_183110.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 3,
+          "col": 5
+        },
+        "boundingBox": {
+          "ymin": 465,
+          "xmin": 852,
+          "ymax": 498,
+          "xmax": 893
+        },
+        "reason": "颜色/形状不同",
+        "description": "该小球颜色较深且形状不规则",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_e2bd31524cde2768570f7fb8c2ad66df.jpg"
+    },
+    "74f7244456403a018928ca21a5fd38c4": {
+      "hash": "74f7244456403a018928ca21a5fd38c4",
+      "filename": "IMG_20251127_183205.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 4
+        },
+        "boundingBox": {
+          "ymin": 545,
+          "xmin": 865,
+          "ymax": 581,
+          "xmax": 915
+        },
+        "reason": "形状/破损不同",
+        "description": "第三行第五列的球与其他球形状或破损不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_74f7244456403a018928ca21a5fd38c4.jpg"
+    },
+    "e20143e967ccb572df476dfc1e9d0412": {
+      "hash": "e20143e967ccb572df476dfc1e9d0412",
+      "filename": "IMG_20251127_183235.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 4
+        },
+        "boundingBox": {
+          "ymin": 530,
+          "xmin": 820,
+          "ymax": 560,
+          "xmax": 860
+        },
+        "reason": "颜色/破损不同",
+        "description": "该小球与其他小球在颜色或完整性上存在差异",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_e20143e967ccb572df476dfc1e9d0412.jpg"
+    },
+    "fa0bd5583682ff634bdef98a8ccce709": {
+      "hash": "fa0bd5583682ff634bdef98a8ccce709",
+      "filename": "IMG_20251127_183529.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 2
+        },
+        "boundingBox": {
+          "ymin": 545,
+          "xmin": 445,
+          "ymax": 585,
+          "xmax": 485
+        },
+        "reason": "颜色不同",
+        "description": "该球颜色偏红，与其他球颜色不一致",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_fa0bd5583682ff634bdef98a8ccce709.jpg"
+    },
+    "2fe2edee11d44bec3a957fae72abc632": {
+      "hash": "2fe2edee11d44bec3a957fae72abc632",
+      "filename": "IMG_20251127_183632.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 5,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 1,
+          "col": 4
+        },
+        "boundingBox": {
+          "ymin": 329,
+          "xmin": 730,
+          "ymax": 355,
+          "xmax": 760
+        },
+        "reason": "破损",
+        "description": "破损的小球",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_2fe2edee11d44bec3a957fae72abc632.jpg"
+    },
+    "00343ae09d6b32de42f94ec21950b222": {
+      "hash": "00343ae09d6b32de42f94ec21950b222",
+      "filename": "IMG_20251127_183702.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 5,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 3,
+          "col": 1
+        },
+        "boundingBox": {
+          "ymin": 570,
+          "xmin": 80,
+          "ymax": 600,
+          "xmax": 120
+        },
+        "reason": "破损",
+        "description": "该球有破损",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_00343ae09d6b32de42f94ec21950b222.jpg"
+    },
+    "9c1f4b7954c8d0504075538f850b8123": {
+      "hash": "9c1f4b7954c8d0504075538f850b8123",
+      "filename": "IMG_20251127_183719.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 2
+        },
+        "boundingBox": {
+          "ymin": 590,
+          "xmin": 490,
+          "ymax": 620,
+          "xmax": 530
+        },
+        "reason": "颜色/形状不同",
+        "description": "该球颜色较深且形状略有差异",
+        "confidence": 0.8
+      },
+      "resultImagePath": "/cache/result_9c1f4b7954c8d0504075538f850b8123.jpg"
+    },
+    "943051c9a71429b6db6a8dec620877a9": {
+      "hash": "943051c9a71429b6db6a8dec620877a9",
+      "filename": "IMG_20251127_183734.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 0
+        },
+        "boundingBox": {
+          "ymin": 585,
+          "xmin": 170,
+          "ymax": 615,
+          "xmax": 230
+        },
+        "reason": "颜色/形状不同",
+        "description": "第三行第一列小球与其他不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_943051c9a71429b6db6a8dec620877a9.jpg"
+    },
+    "48bece1f9c6fe02d78b496a5c081e4c4": {
+      "hash": "48bece1f9c6fe02d78b496a5c081e4c4",
+      "filename": "IMG_20251127_183749.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 2
+        },
+        "boundingBox": {
+          "ymin": 606,
+          "xmin": 541,
+          "ymax": 636,
+          "xmax": 571
+        },
+        "reason": "颜色和表面纹理不同",
+        "description": "该球颜色更深且表面有不同纹理",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_48bece1f9c6fe02d78b496a5c081e4c4.jpg"
+    },
+    "1144aee4acbb039dcc983cfbd86172ef": {
+      "hash": "1144aee4acbb039dcc983cfbd86172ef",
+      "filename": "IMG_20251127_183813.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 5,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 3,
+          "col": 3
+        },
+        "boundingBox": {
+          "ymin": 630,
+          "xmin": 530,
+          "ymax": 660,
+          "xmax": 570
+        },
+        "reason": "破损不同",
+        "description": "该小球有破损，其他小球完整",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_1144aee4acbb039dcc983cfbd86172ef.jpg"
+    },
+    "54b379fcc73c76aa26112de6a69f0490": {
+      "hash": "54b379fcc73c76aa26112de6a69f0490",
+      "filename": "IMG_20251127_183835.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 2
+        },
+        "boundingBox": {
+          "ymin": 615,
+          "xmin": 522,
+          "ymax": 642,
+          "xmax": 553
+        },
+        "reason": "表面有裂纹",
+        "description": "该球表面存在明显裂纹，与其他光滑球不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_54b379fcc73c76aa26112de6a69f0490.jpg"
+    },
+    "0130061ef47315be75439234fd0d8983": {
+      "hash": "0130061ef47315be75439234fd0d8983",
+      "filename": "IMG_20251127_183849.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 3,
+          "col": 2
+        },
+        "boundingBox": {
+          "ymin": 630,
+          "xmin": 385,
+          "ymax": 652,
+          "xmax": 410
+        },
+        "reason": "形状不同",
+        "description": "该小球形状与其他小球不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_0130061ef47315be75439234fd0d8983.jpg"
+    },
+    "6c6175ee84e29dcdbac514c13abdb983": {
+      "hash": "6c6175ee84e29dcdbac514c13abdb983",
+      "filename": "IMG_20251127_183916.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 5,
+          "cols": 4
+        },
+        "anomalyPosition": {
+          "row": 3,
+          "col": 2
+        },
+        "boundingBox": {
+          "ymin": 509,
+          "xmin": 510,
+          "ymax": 544,
+          "xmax": 538
+        },
+        "reason": "颜色不同",
+        "description": "红色小球与其他浅紫色小球不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_6c6175ee84e29dcdbac514c13abdb983.jpg"
+    },
+    "61a1be4f5ada5d0244f9a993a432748e": {
+      "hash": "61a1be4f5ada5d0244f9a993a432748e",
+      "filename": "IMG_20251127_183950.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 5,
+          "cols": 4
+        },
+        "anomalyPosition": {
+          "row": 0,
+          "col": 2
+        },
+        "boundingBox": {
+          "ymin": 120,
+          "xmin": 490,
+          "ymax": 160,
+          "xmax": 530
+        },
+        "reason": "颜色不同",
+        "description": "红色物体与其他紫色物体不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_61a1be4f5ada5d0244f9a993a432748e.jpg"
+    },
+    "1d07e0164d9ed54cf5b8679961abc834": {
+      "hash": "1d07e0164d9ed54cf5b8679961abc834",
+      "filename": "IMG_20251127_184035.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 5,
+          "cols": 5
+        },
+        "anomalyPosition": {
+          "row": 3,
+          "col": 3
+        },
+        "boundingBox": {
+          "ymin": 585,
+          "xmin": 505,
+          "ymax": 625,
+          "xmax": 545
+        },
+        "reason": "颜色不同",
+        "description": "红色小球与其他紫色小球不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_1d07e0164d9ed54cf5b8679961abc834.jpg"
+    },
+    "bd3ddd5d1f9e501c761b889d5d46b80b": {
+      "hash": "bd3ddd5d1f9e501c761b889d5d46b80b",
+      "filename": "IMG_20251127_184058.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 5,
+          "cols": 4
+        },
+        "anomalyPosition": {
+          "row": 4,
+          "col": 1
+        },
+        "boundingBox": {
+          "ymin": 680,
+          "xmin": 170,
+          "ymax": 730,
+          "xmax": 220
+        },
+        "reason": "颜色不同",
+        "description": "红色物体与其他灰色物体不同",
+        "confidence": 1
+      },
+      "resultImagePath": "/cache/result_bd3ddd5d1f9e501c761b889d5d46b80b.jpg"
+    },
+    "73b00edd42f312a73e62a7df47eb1ef7": {
+      "hash": "73b00edd42f312a73e62a7df47eb1ef7",
+      "filename": "IMG_20251127_184135.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 5,
+          "cols": 4
+        },
+        "anomalyPosition": {
+          "row": 2,
+          "col": 3
+        },
+        "boundingBox": {
+          "ymin": 262,
+          "xmin": 505,
+          "ymax": 307,
+          "xmax": 540
+        },
+        "reason": "颜色更深且形状有差异",
+        "description": "该物体颜色与其他物体不同且表面有破损",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_73b00edd42f312a73e62a7df47eb1ef7.jpg"
+    },
+    "a4df4748fda8ac40e5aca610c74129fe": {
+      "hash": "a4df4748fda8ac40e5aca610c74129fe",
+      "filename": "IMG_20251127_184157.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 5,
+          "cols": 4
+        },
+        "anomalyPosition": {
+          "row": 4,
+          "col": 1
+        },
+        "boundingBox": {
+          "ymin": 695,
+          "xmin": 222,
+          "ymax": 745,
+          "xmax": 257
+        },
+        "reason": "颜色不同",
+        "description": "该物体颜色为红色，与其他物体的紫色不同",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_a4df4748fda8ac40e5aca610c74129fe.jpg"
+    },
+    "b35d259521bb15d0910da7edc16933fa": {
+      "hash": "b35d259521bb15d0910da7edc16933fa",
+      "filename": "IMG_20251127_184220.jpg",
+      "result": {
+        "found": true,
+        "gridSize": {
+          "rows": 4,
+          "cols": 4
+        },
+        "anomalyPosition": {
+          "row": 4,
+          "col": 2
+        },
+        "boundingBox": {
+          "ymin": 865,
+          "xmin": 505,
+          "ymax": 904,
+          "xmax": 540
+        },
+        "reason": "颜色不同",
+        "description": "该物体颜色较其他物体更深且偏红",
+        "confidence": 0.9
+      },
+      "resultImagePath": "/cache/result_b35d259521bb15d0910da7edc16933fa.jpg"
+    }
+  }
+}

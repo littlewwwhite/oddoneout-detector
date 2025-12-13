@@ -32,7 +32,16 @@ export const TRANSLATIONS = {
     stepPreprocess: "Image preprocessed",
     stepAnalyze: "Running anomaly detection...",
     stepResult: "Generate result",
-    zoomView: "Zoomed View"
+    zoomView: "Zoomed View",
+    settings: "Settings",
+    apiUrl: "API URL",
+    apiUrlHint: "OpenAI compatible endpoint (e.g., OpenAI, SiliconFlow, OpenRouter)",
+    apiKey: "API Key",
+    model: "Model",
+    modelHint: "Vision model with image understanding capability",
+    cancel: "Cancel",
+    save: "Save",
+    saved: "Saved!"
   },
   zh: {
     title: "AI 药丸💊异常判断",
@@ -65,7 +74,16 @@ export const TRANSLATIONS = {
     stepPreprocess: "图像预处理完成",
     stepAnalyze: "正在进行异常检测...",
     stepResult: "生成结果",
-    zoomView: "放大视图"
+    zoomView: "放大视图",
+    settings: "设置",
+    apiUrl: "API 地址",
+    apiUrlHint: "OpenAI 兼容接口 (如 OpenAI、SiliconFlow、OpenRouter)",
+    apiKey: "API 密钥",
+    model: "模型",
+    modelHint: "支持图像理解的视觉模型",
+    cancel: "取消",
+    save: "保存",
+    saved: "已保存!"
   }
 };
 

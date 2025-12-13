@@ -1,4 +1,5 @@
 import { DetectionResult, Language } from "../types";
+import { getApiConfig } from "./configService";
 
 // --- CUSTOM OVERRIDE CONFIGURATION ---
 const CUSTOM_OVERRIDES: Record<string, DetectionResult> = {
@@ -49,15 +50,20 @@ export const detectAnomaly = async (base64Image: string, lang: Language): Promis
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60000); // 60秒超时
 
-    const response = await fetch("https://api.siliconflow.cn/v1/chat/completions", {
+    const config = getApiConfig();
+    if (!config.apiKey) {
+      throw new Error("API Key not configured. Please go to Settings to configure your API.");
+    }
+
+    const response = await fetch(config.apiUrl, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.API_KEY}`,
+        "Authorization": `Bearer ${config.apiKey}`,
         "Content-Type": "application/json"
       },
       signal: controller.signal,
       body: JSON.stringify({
-        model: "zai-org/GLM-4.5V",
+        model: config.model,
         messages: [
           {
             role: "user",
@@ -84,7 +90,7 @@ export const detectAnomaly = async (base64Image: string, lang: Language): Promis
     clearTimeout(timeoutId); // 清除超时定时器
 
     if (!response.ok) {
-      let errorMessage = `SiliconFlow API error: ${response.status} ${response.statusText}`;
+      let errorMessage = `API error: ${response.status} ${response.statusText}`;
       try {
         const errorData = await response.json();
         if (errorData.error && errorData.error.message) {
@@ -100,7 +106,7 @@ export const detectAnomaly = async (base64Image: string, lang: Language): Promis
 
     // 检查响应结构
     if (!result.choices || !result.choices[0] || !result.choices[0].message) {
-      throw new Error("Invalid response format from SiliconFlow API");
+      throw new Error("Invalid response format from API");
     }
 
     const content = result.choices[0].message.content;
