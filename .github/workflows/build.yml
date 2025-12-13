@@ -21,6 +21,9 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Generate icons from source
+        run: bunx tauri icon src-tauri/icon.jpeg --output src-tauri/icons
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
