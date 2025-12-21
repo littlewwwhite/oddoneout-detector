@@ -61,10 +61,23 @@ export const TRANSLATIONS = {
     tutorialTip1: "Batch upload supported, system will queue and process automatically",
     tutorialTip2: "Results include position coordinates, confidence score, and anomaly analysis",
     tutorialTip3: "History saved in local browser, won't be lost after page refresh",
-    tutorialGotIt: "Got it"
+    tutorialGotIt: "Got it",
+    presets: "Presets",
+    addPreset: "Add Preset",
+    inputImage: "Input Image",
+    outputImage: "Output Image",
+    presetReason: "Reason",
+    deletePreset: "Delete",
+    noPresets: "No presets yet",
+    presetAdded: "Preset added",
+    presetDeleted: "Preset deleted",
+    selectInputImage: "Select input image",
+    selectOutputImage: "Select output image",
+    advanced: "Advanced",
+    presetsDesc: "Custom input-output mappings"
   },
   zh: {
-    title: "AI 药丸💊异常判断",
+    title: "AI 药丸异常判断",
     subtitle: "AI 药丸异常判断系统",
     uploadTitle: "批量分析",
     uploadDesc: "拖拽多张图片或点击上传",
@@ -123,7 +136,20 @@ export const TRANSLATIONS = {
     tutorialTip1: "支持批量上传多张图片，系统会自动排队处理",
     tutorialTip2: "检测结果包含位置坐标、置信度和异常原因分析",
     tutorialTip3: "历史记录保存在本地浏览器，刷新页面不会丢失",
-    tutorialGotIt: "我知道了"
+    tutorialGotIt: "我知道了",
+    presets: "预设管理",
+    addPreset: "添加预设",
+    inputImage: "输入图片",
+    outputImage: "输出图片",
+    presetReason: "原因",
+    deletePreset: "删除",
+    noPresets: "暂无预设",
+    presetAdded: "预设已添加",
+    presetDeleted: "预设已删除",
+    selectInputImage: "选择输入图片",
+    selectOutputImage: "选择输出图片",
+    advanced: "高级功能",
+    presetsDesc: "自定义输入输出映射"
   }
 };
 

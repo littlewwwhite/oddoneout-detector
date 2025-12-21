@@ -6,6 +6,7 @@ import { HistoryList } from './components/HistoryList';
 import { AnomalyDetail } from './components/AnomalyDetail';
 import { detectAnomaly } from './services/openrouterService';
 import { findCachedResult, loadCacheIndex } from './services/cacheService';
+import { findPresetMatch } from './services/presetService';
 import { AppState, DetectionResult, Language, HistoryItem, LogEntry } from './types';
 import { Grid, Languages, Plus, History, ChevronLeft, ChevronRight, Settings, BookOpen } from 'lucide-react';
 import { getT } from './constants/translations';
@@ -99,7 +100,34 @@ const App: React.FC = () => {
       setHistory(prev => [tempHistoryItem, ...prev]);
       setCurrentHistoryId(historyId);
 
-      // 2. Check cache first (for offline demo)
+      // 2. Check user presets first
+      addLog(`Checking user presets...`, 'info');
+      const presetMatch = await findPresetMatch(base64);
+
+      if (presetMatch) {
+        addLog(`Preset match found! Using predefined result.`, 'success');
+        await new Promise(r => setTimeout(r, 300));
+
+        const presetResult: DetectionResult = {
+          found: true,
+          gridSize: { rows: 0, cols: 0 },
+          description: presetMatch.reason,
+          reason: presetMatch.reason,
+          confidence: 1.0,
+        };
+
+        setHistory(prev => prev.map(item =>
+          item.id === historyId ? {
+            ...item,
+            result: presetResult,
+            imageSrc: presetMatch.outputImageSrc,
+            status: 'success'
+          } : item
+        ));
+        return;
+      }
+
+      // 3. Check cache (for offline demo)
       addLog(`Checking local cache...`, 'info');
       const cached = await findCachedResult(base64);
 
@@ -380,7 +408,7 @@ const App: React.FC = () => {
       )}
 
       {/* Settings Modal */}
-      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} t={t} />
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} t={t} lang={lang} />
 
       {/* Tutorial Modal */}
       <TutorialModal isOpen={tutorialOpen} onClose={() => setTutorialOpen(false)} t={t} />

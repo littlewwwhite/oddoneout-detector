@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { X, Key, Globe, Cpu, Eye, EyeOff } from 'lucide-react';
+import { X, Key, Globe, Cpu, Eye, EyeOff, ChevronDown, Layers } from 'lucide-react';
 import { ApiConfig, getApiConfig, saveApiConfig } from '../services/configService';
+import { PresetManager } from './PresetManager';
+import { Language } from '../types';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   t: Record<string, string>;
+  lang: Language;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, t }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, t, lang }) => {
   const [config, setConfig] = useState<ApiConfig>(getApiConfig());
   const [showApiKey, setShowApiKey] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [presetOpen, setPresetOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setConfig(getApiConfig());
       setSaved(false);
+      setAdvancedOpen(false);
     }
   }, [isOpen]);
 
@@ -29,6 +35,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, t
   };
 
   if (!isOpen) return null;
+
+  if (presetOpen) {
+    return <PresetManager lang={lang} onClose={() => setPresetOpen(false)} />;
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -103,6 +113,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, t
             <p className="mt-1.5 text-xs text-slate-500">
               {t.modelHint || 'Vision model with image understanding capability'}
             </p>
+          </div>
+
+          {/* Advanced Section */}
+          <div className="border-t border-slate-200 pt-4">
+            <button
+              onClick={() => setAdvancedOpen(!advancedOpen)}
+              className="w-full flex items-center justify-between text-sm font-medium text-slate-600 hover:text-slate-800"
+            >
+              <span>{t.advanced || 'Advanced'}</span>
+              <ChevronDown className={`w-4 h-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {advancedOpen && (
+              <div className="mt-3">
+                <button
+                  onClick={() => setPresetOpen(true)}
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors text-left"
+                >
+                  <Layers className="w-5 h-5 text-indigo-500" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">{t.presets || 'Presets'}</p>
+                    <p className="text-xs text-slate-500">{t.presetsDesc || 'Custom input-output mappings'}</p>
+                  </div>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

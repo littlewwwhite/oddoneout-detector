@@ -43,3 +43,11 @@ export enum AppState {
   PROCESSING = 'PROCESSING',
   FINISHED = 'FINISHED' // Queue finished
 }
+
+export interface PresetMapping {
+  id: string;
+  inputImageSrc: string;  // base64 of input image
+  outputImageSrc: string; // base64 of result image
+  reason: string;
+  createdAt: number;
+}
