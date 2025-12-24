@@ -1,41 +1,59 @@
 import { PresetMapping } from "../types";
 
 const STORAGE_KEY = 'oddoneout-presets';
-const MAX_IMAGE_SIZE = 200;
+export const MAX_IMAGE_SIZE = 800; // Higher quality
+export const JPEG_QUALITY = 0.85; // Better quality
 
-function compressImage(base64: string, maxSize: number): Promise<string> {
-  return new Promise((resolve) => {
+export function compressImage(base64: string, maxSize: number, quality: number = JPEG_QUALITY): Promise<string> {
+  return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      let { width, height } = img;
-      if (width > height && width > maxSize) {
-        height = (height * maxSize) / width;
-        width = maxSize;
-      } else if (height > maxSize) {
-        width = (width * maxSize) / height;
-        height = maxSize;
+      try {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        // Scale down to fit within maxSize
+        const scale = Math.min(1, maxSize / Math.max(width, height));
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, width, height);
+        const result = canvas.toDataURL('image/jpeg', quality);
+        // Clean up to prevent memory leaks
+        img.onload = null;
+        img.onerror = null;
+        img.src = '';
+        resolve(result);
+      } catch (err) {
+        reject(err);
       }
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', 0.7));
+    };
+    img.onerror = () => {
+      img.onload = null;
+      img.onerror = null;
+      reject(new Error('Failed to load image'));
     };
     img.src = base64;
   });
 }
 
-async function computeBase64Hash(base64: string): Promise<string> {
-  const pureBase64 = base64.replace(/^data:image\/\w+;base64,/, '');
-  const binaryString = atob(pureBase64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
+// Simple hash function that works without crypto.subtle
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
   }
-  const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+  return Math.abs(hash).toString(16).padStart(8, '0');
+}
+
+function computeBase64Hash(base64: string): string {
+  const pureBase64 = base64.replace(/^data:image\/\w+;base64,/, '');
+  // Sample the string for faster hashing
+  const sample = pureBase64.slice(0, 1000) + pureBase64.slice(-1000) + pureBase64.length;
+  return simpleHash(sample);
 }
 
 export function loadPresets(): PresetMapping[] {
@@ -47,15 +65,37 @@ export function loadPresets(): PresetMapping[] {
   }
 }
 
+export function getStorageUsage(): { used: number; max: number; percentage: number } {
+  const data = localStorage.getItem(STORAGE_KEY) || '[]';
+  const used = new Blob([data]).size;
+  const max = 4 * 1024 * 1024;
+  return { used, max, percentage: (used / max) * 100 };
+}
+
 export function savePresets(presets: PresetMapping[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(presets));
+  const data = JSON.stringify(presets);
+  const estimatedSize = new Blob([data]).size;
+  const maxSize = 4 * 1024 * 1024;
+  if (estimatedSize > maxSize) {
+    throw new Error(`数据过大: ${(estimatedSize / 1024).toFixed(0)}KB，请删除一些预设`);
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY, data);
+  } catch (e) {
+    // Handle native QuotaExceededError
+    throw new Error(`localStorage 已满，请清理浏览器存储或删除预设`);
+  }
+}
+
+function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
 export function addPreset(preset: Omit<PresetMapping, 'id' | 'createdAt'>): PresetMapping {
   const presets = loadPresets();
   const newPreset: PresetMapping = {
     ...preset,
-    id: crypto.randomUUID(),
+    id: generateId(),
     createdAt: Date.now(),
   };
   presets.unshift(newPreset);
@@ -71,6 +111,9 @@ export function deletePreset(id: string): void {
 export interface PresetMatchResult {
   outputImageSrc: string;
   reason: string;
+  found: boolean;
+  confidence: number;
+  zoomImageSrc?: string;
 }
 
 export async function findPresetMatch(inputBase64: string): Promise<PresetMatchResult | null> {
@@ -79,15 +122,18 @@ export async function findPresetMatch(inputBase64: string): Promise<PresetMatchR
 
   // Compress input image to same size as stored presets before comparing
   const compressedInput = await compressImage(inputBase64, MAX_IMAGE_SIZE);
-  const inputHash = await computeBase64Hash(compressedInput);
+  const inputHash = computeBase64Hash(compressedInput);
 
   for (const preset of presets) {
-    const presetHash = await computeBase64Hash(preset.inputImageSrc);
+    const presetHash = computeBase64Hash(preset.inputImageSrc);
     if (inputHash === presetHash) {
       console.log(`[Preset] Match found for hash ${inputHash}`);
       return {
         outputImageSrc: preset.outputImageSrc,
         reason: preset.reason,
+        found: preset.found ?? true,
+        confidence: preset.confidence ?? 1.0,
+        zoomImageSrc: preset.zoomImageSrc,
       };
     }
   }

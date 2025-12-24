@@ -109,11 +109,12 @@ const App: React.FC = () => {
         await new Promise(r => setTimeout(r, 300));
 
         const presetResult: DetectionResult = {
-          found: true,
+          found: presetMatch.found,
           gridSize: { rows: 0, cols: 0 },
+          anomalyPosition: { row: 0, col: 0 },
           description: presetMatch.reason,
           reason: presetMatch.reason,
-          confidence: 1.0,
+          confidence: presetMatch.confidence,
         };
 
         setHistory(prev => prev.map(item =>
@@ -121,6 +122,7 @@ const App: React.FC = () => {
             ...item,
             result: presetResult,
             imageSrc: presetMatch.outputImageSrc,
+            zoomImageSrc: presetMatch.zoomImageSrc,
             status: 'success'
           } : item
         ));
@@ -229,6 +231,16 @@ const App: React.FC = () => {
       setCurrentHistoryId(null);
       addLog('History cleared', 'info');
     }
+  };
+
+  const handleDeleteHistoryItem = (id: string) => {
+    setHistory(prev => {
+      const newHistory = prev.filter(item => item.id !== id);
+      if (currentHistoryId === id) {
+        setCurrentHistoryId(newHistory.length > 0 ? newHistory[0].id : null);
+      }
+      return newHistory;
+    });
   };
 
   const currentItem = history.find(h => h.id === currentHistoryId);
@@ -357,6 +369,7 @@ const App: React.FC = () => {
             isAnalyzing={currentItem ? (!currentItem.result && currentItem.status !== 'error') : false}
             lang={lang}
             imageSrc={currentItem?.imageSrc}
+            zoomImageSrc={currentItem?.zoomImageSrc}
             isEmpty={!currentItem}
           />
 
@@ -382,6 +395,7 @@ const App: React.FC = () => {
               currentId={currentHistoryId}
               onSelect={(item) => { handleSelectHistory(item); setHistorySidebarOpen(false); }}
               onClearHistory={handleClearHistory}
+              onDeleteItem={handleDeleteHistoryItem}
               lang={lang}
             />
           </div>

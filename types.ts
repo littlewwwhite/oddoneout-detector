@@ -29,6 +29,7 @@ export interface HistoryItem {
   imageSrc: string;
   result: DetectionResult | null; // null if error or processing
   status: 'success' | 'error' | 'processing';
+  zoomImageSrc?: string; // optional zoomed view image from preset
 }
 
 export interface LogEntry {
@@ -49,5 +50,8 @@ export interface PresetMapping {
   inputImageSrc: string;  // base64 of input image
   outputImageSrc: string; // base64 of result image
   reason: string;
+  found: boolean;         // true = anomaly found, false = perfect
+  confidence?: number;    // 0.0 to 1.0, default 1.0
+  zoomImageSrc?: string;  // optional zoomed view image
   createdAt: number;
 }

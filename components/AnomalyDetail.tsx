@@ -8,10 +8,11 @@ interface AnomalyDetailProps {
   isAnalyzing: boolean;
   lang: Language;
   imageSrc?: string;
+  zoomImageSrc?: string;
   isEmpty?: boolean;
 }
 
-export const AnomalyDetail: React.FC<AnomalyDetailProps> = ({ result, isAnalyzing, lang, imageSrc, isEmpty }) => {
+export const AnomalyDetail: React.FC<AnomalyDetailProps> = ({ result, isAnalyzing, lang, imageSrc, zoomImageSrc, isEmpty }) => {
   const t = getT(lang);
 
   const getConfidenceColor = (conf: number) => {
@@ -81,7 +82,9 @@ export const AnomalyDetail: React.FC<AnomalyDetailProps> = ({ result, isAnalyzin
               {result.found ? t.found : t.perfect}
             </h3>
             <p className={`text-xs truncate ${result.found ? 'text-red-700' : 'text-emerald-700'}`}>
-              {result.found ? `${t.row} ${result.anomalyPosition?.row}, ${t.col} ${result.anomalyPosition?.col}` : t.perfectDesc}
+              {result.found
+                ? (result.anomalyPosition?.row ? `${t.row} ${result.anomalyPosition.row}, ${t.col} ${result.anomalyPosition.col}` : result.reason)
+                : (result.reason || t.perfectDesc)}
             </p>
           </div>
         </div>
@@ -117,7 +120,12 @@ export const AnomalyDetail: React.FC<AnomalyDetailProps> = ({ result, isAnalyzin
           <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
             <ZoomIn className="w-3 h-3" /> {t.zoomView}
           </h4>
-          {result.found && imageSrc && result.boundingBox ? (() => {
+          {zoomImageSrc ? (
+            <div className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 shadow-md ring-2 ring-white">
+              <img src={zoomImageSrc} alt="zoom" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 ring-4 ring-inset ring-indigo-500/30 rounded-xl pointer-events-none" />
+            </div>
+          ) : result.found && imageSrc && result.boundingBox ? (() => {
             const box = result.boundingBox!;
             const boxW = box.xmax - box.xmin;
             const boxH = box.ymax - box.ymin;
@@ -146,7 +154,7 @@ export const AnomalyDetail: React.FC<AnomalyDetailProps> = ({ result, isAnalyzin
             );
           })() : (
             <div className="aspect-square bg-slate-50/50 rounded-xl border border-white/50 flex items-center justify-center shadow-inner">
-              <p className="text-xs text-slate-400">{t.perfectDesc}</p>
+              <p className="text-xs text-slate-400">{result.reason || t.perfectDesc}</p>
             </div>
           )}
         </div>

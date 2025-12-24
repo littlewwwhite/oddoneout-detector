@@ -63,11 +63,13 @@ export const ResultViewer: React.FC<ResultViewerProps> = ({
         </h2>
         {result && (
           <span className={`px-3 py-1 rounded-full text-xs font-bold border shadow-sm ${
-            result.found 
-              ? 'bg-indigo-50 text-indigo-700 border-indigo-100 ring-2 ring-indigo-500/10' 
+            result.found
+              ? 'bg-indigo-50 text-indigo-700 border-indigo-100 ring-2 ring-indigo-500/10'
               : 'bg-emerald-50 text-emerald-700 border-emerald-100 ring-2 ring-emerald-500/10'
           }`}>
-            {result.found ? `${t.row} ${result.anomalyPosition?.row}, ${t.col} ${result.anomalyPosition?.col}` : t.perfect}
+            {result.found
+              ? (result.anomalyPosition?.row ? `${t.row} ${result.anomalyPosition.row}, ${t.col} ${result.anomalyPosition.col}` : t.found)
+              : t.perfect}
           </span>
         )}
       </div>
