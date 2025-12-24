@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "智能医药分析系统",
+  "productName": "OddOneOut-Detector",
   "version": "1.0.0",
   "identifier": "com.pharma.analyzer",
   "build": {
