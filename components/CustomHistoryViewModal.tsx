@@ -313,7 +313,7 @@ export const CustomHistoryViewModal: React.FC<CustomHistoryViewModalProps> = ({
         {records.map((item) => (
           <div key={item.id} className="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden hover:border-indigo-300 transition-colors group">
             <div className="aspect-square relative cursor-pointer" onClick={() => handleViewItem(item)}>
-              <img src={item.imageSrc} alt="" className="w-full h-full object-cover" />
+              <img src={item.originalImageSrc || item.imageSrc} alt="" className="w-full h-full object-cover" />
               <div className="absolute top-2 right-2">
                 {item.result?.found ? (
                   <div className="bg-red-500 text-white p-1 rounded-full"><AlertCircle className="w-3 h-3" /></div>
