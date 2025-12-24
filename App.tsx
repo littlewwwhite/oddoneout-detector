@@ -16,9 +16,6 @@ import { CustomHistoryViewModal } from './components/CustomHistoryViewModal';
 import { clearHistoryItems, deleteHistoryItem, loadHistoryItemsWithMigration, saveHistoryItem } from './services/historyStore';
 import { findCustomRecordMatch } from './services/customRecordStore';
 
-const HISTORY_IMAGE_MAX_SIZE = 1280;
-const HISTORY_IMAGE_QUALITY = 0.85;
-
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('zh'); // Default to Chinese
   const t = getT(lang);
@@ -93,15 +90,11 @@ const App: React.FC = () => {
         reader.readAsDataURL(file);
       });
 
-      addLog(`Optimizing image for local storage...`, 'info');
-      const displayImageSrc = await compressImage(originalImageSrc, HISTORY_IMAGE_MAX_SIZE, HISTORY_IMAGE_QUALITY)
-        .catch(() => originalImageSrc);
-
       // Update current view immediately
       tempHistoryItem = {
         id: historyId,
         timestamp: Date.now(),
-        imageSrc: displayImageSrc,
+        imageSrc: originalImageSrc,
         result: null,
         status: 'processing' // Initially processing
       };

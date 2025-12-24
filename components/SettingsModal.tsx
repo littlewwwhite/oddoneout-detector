@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Key, Globe, Cpu, Eye, EyeOff, ChevronDown, Layers } from 'lucide-react';
+import { X, Key, Globe, Cpu, Eye, EyeOff, ChevronDown, PenLine } from 'lucide-react';
 import { ApiConfig, getApiConfig, saveApiConfig } from '../services/configService';
-import { PresetManager } from './PresetManager';
 import { Language } from '../types';
 
 interface SettingsModalProps {
@@ -9,14 +8,14 @@ interface SettingsModalProps {
   onClose: () => void;
   t: Record<string, string>;
   lang: Language;
+  onOpenCustomRecords?: () => void;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, t, lang }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, t, lang, onOpenCustomRecords }) => {
   const [config, setConfig] = useState<ApiConfig>(getApiConfig());
   const [showApiKey, setShowApiKey] = useState(false);
   const [saved, setSaved] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [presetOpen, setPresetOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -35,10 +34,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, t
   };
 
   if (!isOpen) return null;
-
-  if (presetOpen) {
-    return <PresetManager lang={lang} onClose={() => setPresetOpen(false)} />;
-  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -124,16 +119,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, t
               <span>{t.advanced || 'Advanced'}</span>
               <ChevronDown className={`w-4 h-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`} />
             </button>
-            {advancedOpen && (
+            {advancedOpen && onOpenCustomRecords && (
               <div className="mt-3">
                 <button
-                  onClick={() => setPresetOpen(true)}
+                  onClick={() => {
+                    onClose();
+                    onOpenCustomRecords();
+                  }}
                   className="w-full flex items-center gap-3 px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors text-left"
                 >
-                  <Layers className="w-5 h-5 text-indigo-500" />
+                  <PenLine className="w-5 h-5 text-violet-500" />
                   <div>
-                    <p className="text-sm font-medium text-slate-700">{t.presets || 'Presets'}</p>
-                    <p className="text-xs text-slate-500">{t.presetsDesc || 'Custom input-output mappings'}</p>
+                    <p className="text-sm font-medium text-slate-700">{lang === 'zh' ? '自定义记录' : 'Custom Records'}</p>
+                    <p className="text-xs text-slate-500">{lang === 'zh' ? '管理自定义预设记录' : 'Manage custom preset records'}</p>
                   </div>
                 </button>
               </div>
