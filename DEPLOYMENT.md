@@ -7,8 +7,8 @@
 ## 功能特点
 
 ✅ **localStorage 历史记录系统**
-- 自动保存所有检测结果到浏览器本地存储
-- 页面刷新后历史记录不会丢失
+- 自动保存所有检测结果到浏览器本地存储（IndexedDB）
+- 页面刷新/重启后历史记录不会丢失
 - 支持清除历史记录功能
 
 ✅ **Cloudflare Pages 优化**
@@ -74,12 +74,14 @@ npm run deploy
 
 ## 历史记录系统
 
-### 本地存储 (localStorage)
+### 本地存储 (IndexedDB)
 
-- **存储位置**: 浏览器本地存储
-- **存储格式**: JSON 字符串
-- **存储键名**: `oddoneout-history`
-- **数据包含**: 图片 base64、检测结果、时间戳、状态
+- **存储位置**: 浏览器 / WebView IndexedDB
+- **DB**: `oddoneout-detector`
+- **Object Store**: `history`
+- **存储格式**: 结构化记录（每条历史一条记录）
+- **数据包含**: 图片（压缩后的 base64 或本地 cache 路径）、检测结果、时间戳、状态
+- **兼容迁移**: 首次启动会自动迁移旧版 localStorage 的 `oddoneout-history`（仅在 IndexedDB 为空时）
 
 ### 使用说明
 
@@ -90,8 +92,8 @@ npm run deploy
 
 ### 存储限制
 
-- 浏览器 localStorage 通常有 5-10MB 的限制
-- 建议定期清理历史记录，避免存储过多大图片
+- IndexedDB 通常比 localStorage 有更大的可用空间，但仍建议定期清理历史记录
+- 为了减少占用，历史记录中的上传图片会在保存前进行压缩
 
 ## 高级配置（可选）
 

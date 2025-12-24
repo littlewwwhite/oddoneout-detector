@@ -123,7 +123,7 @@ oddoneout-detector/
 export const TRANSLATIONS = {
   en: { /* ... */ },
   zh: { /* ... */ },
-  ja: { /* 新增日语 */ }
+  ja: { /* add Japanese */ }
 };
 ```
 
@@ -142,6 +142,12 @@ A: 点击设置按钮，修改 Model 字段。推荐使用支持图像理解的�
 **Q: 离线模式如何工作？**
 A: 预处理脚本会生成图片的 MD5 哈希和检测结果，打包到应用中。上传时优先匹配缓存。
 
+**Q: Tauri 打包后离线会出现白屏或 UI 消失吗？**
+A: 生产构建已移除 Tailwind CDN / Google Fonts 等外链依赖。请确保重新执行 `npm run tauri build` 生成最新 `dist/`。在 Windows 上，安装包默认嵌入 WebView2 离线安装器（体积会明显增大），离线机器也能正常安装/启动。
+
+**Q: 关闭软件后历史记录还会存在吗？**
+A: 历史记录保存在 IndexedDB（DB: `oddoneout-detector`, store: `history`），正常情况下重启后仍会保留。旧版 localStorage 的历史会在首次启动时自动迁移（仅在 IndexedDB 为空时）。
+
 ## 许可证
 
 MIT License
@@ -149,4 +155,3 @@ MIT License
 ## 贡献
 
 欢迎提交 Issue 和 Pull Request！
-
