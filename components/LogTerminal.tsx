@@ -18,37 +18,53 @@ export const LogTerminal: React.FC<LogTerminalProps> = ({ logs, lang }) => {
     }
   }, [logs]);
 
+  // Show only last 5 logs
+  const displayLogs = logs.slice(-5);
+
   return (
-    <div className="bg-slate-900 rounded-[1.5rem] overflow-hidden shadow-xl shadow-slate-900/10 border border-slate-800 flex flex-col min-h-[280px] max-h-[400px] ring-4 ring-slate-100">
-      <div className="bg-slate-950/50 px-4 py-3 flex items-center justify-between border-b border-slate-800 backdrop-blur flex-shrink-0">
-        <div className="flex items-center gap-2.5 text-slate-400 text-xs font-bold tracking-wider uppercase">
-          <Terminal className="w-3.5 h-3.5 text-indigo-400" />
+    <div
+      className="bg-white/80 backdrop-blur-md rounded-2xl overflow-hidden shadow-lg shadow-indigo-100/40 border border-white/60 flex flex-col"
+    >
+      <div
+        className="bg-slate-50/80 px-3 py-2 flex items-center justify-between border-b border-slate-200/60 flex-shrink-0"
+      >
+        <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold tracking-wider uppercase">
+          <Terminal className="w-3 h-3" />
           <span>{t.logs}</span>
         </div>
-        <div className="flex gap-1.5 opacity-50 hover:opacity-100 transition-opacity">
-          <div className="w-2.5 h-2.5 rounded-full bg-slate-700 hover:bg-red-500 transition-colors" />
-          <div className="w-2.5 h-2.5 rounded-full bg-slate-700 hover:bg-yellow-500 transition-colors" />
-          <div className="w-2.5 h-2.5 rounded-full bg-slate-700 hover:bg-emerald-500 transition-colors" />
+        <div className="flex items-center gap-3">
+            <span className="text-[9px] text-slate-400 font-mono hidden sm:inline-block">
+                {logs.length > 0 ? `Last: ${logs[logs.length-1].message.substring(0, 30)}...` : 'Ready'}
+            </span>
+            <div className="flex gap-1.5 opacity-60 mr-1">
+              <div className="w-2 h-2 rounded-full bg-slate-300" />
+              <div className="w-2 h-2 rounded-full bg-slate-300" />
+              <div className="w-2 h-2 rounded-full bg-slate-300" />
+            </div>
         </div>
       </div>
-      <div className="flex-1 p-4 overflow-y-auto font-mono text-[11px] space-y-1.5 custom-scrollbar bg-slate-900/50 leading-relaxed min-h-0">
+      <div className="p-3 font-mono text-[10px] space-y-1.5 bg-white/50 leading-relaxed h-[110px] overflow-hidden">
         {logs.length === 0 && (
-          <div className="text-slate-600 italic pl-1 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-slate-700 rounded-full animate-pulse" />
-            System ready. Waiting for input stream...
+          <div className="text-slate-400 italic pl-1 flex items-center gap-2">
+            <span className="w-1 h-1 bg-indigo-500 rounded-full animate-pulse" />
+            System ready.
           </div>
         )}
-        {logs.map((log) => (
-          <div key={log.id} className="flex gap-3 animate-in fade-in duration-300 slide-in-from-left-2 items-start group hover:bg-slate-800/30 -mx-2 px-2 py-0.5 rounded">
-            <span className="text-slate-600 shrink-0 select-none group-hover:text-slate-500 transition-colors">[{log.timestamp}]</span>
+        {displayLogs.map((log) => (
+          <div key={log.id} className="flex gap-2 items-start -mx-2 px-2 py-0.5 rounded">
+            <span className="text-slate-400 shrink-0 select-none font-medium">[{log.timestamp}]</span>
             <span className={`${
-              log.type === 'error' ? 'text-red-400 font-semibold' :
-              log.type === 'success' ? 'text-emerald-400' :
-              log.type === 'warning' ? 'text-amber-400' :
-              'text-indigo-200'
+              log.type === 'error' ? 'text-red-600 font-semibold' :
+              log.type === 'success' ? 'text-emerald-600' :
+              log.type === 'warning' ? 'text-amber-600' :
+              'text-slate-600'
             }`}>
               {log.type !== 'info' && (
-                <span className="mr-1.5 uppercase text-[9px] tracking-wider px-1 py-px rounded bg-white/5 border border-white/10 opacity-80">
+                <span className={`mr-1.5 uppercase text-[8px] tracking-wider px-1 py-px rounded border opacity-90 font-bold ${
+                   log.type === 'error' ? 'bg-red-50 border-red-200 text-red-600' :
+                   log.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' :
+                   'bg-amber-50 border-amber-200 text-amber-600'
+                }`}>
                   {log.type}
                 </span>
               )}

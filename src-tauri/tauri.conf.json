@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "OddOneOut Detector",
+  "productName": "智能医药分析系统",
   "version": "1.0.0",
-  "identifier": "com.oddoneout.detector",
+  "identifier": "com.pharma.analyzer",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:3000",
@@ -13,7 +13,7 @@
     "withGlobalTauri": false,
     "windows": [
       {
-        "title": "OddOneOut Detector",
+        "title": "智能医药分析系统",
         "width": 1280,
         "height": 800,
         "minWidth": 800,
@@ -39,7 +39,8 @@
     ],
     "windows": {
       "webviewInstallMode": {
-        "type": "downloadBootstrapper"
+        "type": "offlineInstaller",
+        "silent": true
       }
     }
   }

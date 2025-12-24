@@ -40,11 +40,6 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, currentId, on
   return (
     <div className="bg-transparent flex flex-col flex-1 min-h-0">
       <div className="overflow-y-auto p-3 space-y-2.5 custom-scrollbar flex-1">
-        {history.length === 0 && (
-          <div className="text-center py-10 text-slate-400 text-sm italic">
-            {t.noHistory || "No history yet"}
-          </div>
-        )}
         {history.map((item) => (
           <div
             key={item.id}

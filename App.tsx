@@ -8,11 +8,16 @@ import { detectAnomaly } from './services/openrouterService';
 import { findCachedResult, loadCacheIndex } from './services/cacheService';
 import { findPresetMatch } from './services/presetService';
 import { AppState, DetectionResult, Language, HistoryItem, LogEntry } from './types';
-import { Grid, Languages, Plus, History, ChevronLeft, ChevronRight, Settings, BookOpen } from 'lucide-react';
+import { Grid, Languages, Plus, History, ChevronLeft, ChevronRight, Settings, BookOpen, Sparkles, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { getT } from './constants/translations';
 import { SettingsModal } from './components/SettingsModal';
 import { TutorialModal } from './components/TutorialModal';
-import { isApiConfigured } from './services/configService';
+import { CustomHistoryViewModal } from './components/CustomHistoryViewModal';
+import { clearHistoryItems, deleteHistoryItem, loadHistoryItemsWithMigration, saveHistoryItem } from './services/historyStore';
+import { findCustomRecordMatch } from './services/customRecordStore';
+
+const HISTORY_IMAGE_MAX_SIZE = 1280;
+const HISTORY_IMAGE_QUALITY = 0.85;
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('zh'); // Default to Chinese
@@ -22,38 +27,37 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [currentHistoryId, setCurrentHistoryId] = useState<string | null>(null);
+  const [selectedCustomItem, setSelectedCustomItem] = useState<HistoryItem | null>(null);
   const [isProcessingQueue, setIsProcessingQueue] = useState(false);
-  const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(!isApiConfigured());
+  const [pendingFiles, setPendingFiles] = useState<{ file: File; preview: string }[]>([]);
+  // Default to open on larger screens if desired, or false. User asked for "显性显示", so defaulting to true is good.
+  const [historySidebarOpen, setHistorySidebarOpen] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [customRecordsOpen, setCustomRecordsOpen] = useState(false);
 
-  // Load history from localStorage and preload cache index on mount
+  // Load history and preload cache index on mount
   useEffect(() => {
-    // Preload cache index for offline matching
     loadCacheIndex();
 
-    try {
-      const savedHistory = localStorage.getItem('oddoneout-history');
-      if (savedHistory) {
-        const parsedHistory = JSON.parse(savedHistory);
-        setHistory(parsedHistory);
-        if (parsedHistory.length > 0) {
-          setCurrentHistoryId(parsedHistory[0].id);
+    let cancelled = false;
+    void (async () => {
+      try {
+        const loaded = await loadHistoryItemsWithMigration();
+        if (cancelled) return;
+        setHistory(loaded);
+        if (loaded.length > 0) {
+          setCurrentHistoryId(loaded[0].id);
         }
+      } catch (error) {
+        console.error('Failed to load history from IndexedDB:', error);
       }
-    } catch (error) {
-      console.error('Failed to load history from localStorage:', error);
-    }
-  }, []);
+    })();
 
-  // Save history to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('oddoneout-history', JSON.stringify(history));
-    } catch (error) {
-      console.error('Failed to save history to localStorage:', error);
-    }
-  }, [history]);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Helper to add fake logs
   const addLog = useCallback((message: string, type: LogEntry['type'] = 'info') => {
@@ -78,31 +82,76 @@ const App: React.FC = () => {
 
     const historyId = Math.random().toString(36).substr(2, 9);
     addLog(`Starting analysis for ${file.name}`, 'info');
+    let tempHistoryItem: HistoryItem | null = null;
 
     try {
       // 1. Read File
       addLog(`Reading file stream...`, 'info');
-      const base64 = await new Promise<string>((resolve) => {
+      const originalImageSrc = await new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
         reader.readAsDataURL(file);
       });
 
+      addLog(`Optimizing image for local storage...`, 'info');
+      const displayImageSrc = await compressImage(originalImageSrc, HISTORY_IMAGE_MAX_SIZE, HISTORY_IMAGE_QUALITY)
+        .catch(() => originalImageSrc);
+
       // Update current view immediately
-      const tempHistoryItem: HistoryItem = {
+      tempHistoryItem = {
         id: historyId,
         timestamp: Date.now(),
-        imageSrc: base64,
+        imageSrc: displayImageSrc,
         result: null,
         status: 'processing' // Initially processing
       };
       // Prepend to history so it shows up selected
-      setHistory(prev => [tempHistoryItem, ...prev]);
+      setHistory(prev => [tempHistoryItem!, ...prev]);
       setCurrentHistoryId(historyId);
+      setSelectedCustomItem(null);
+      void saveHistoryItem(tempHistoryItem).catch((error) => {
+        console.warn('[History] Failed to persist item:', error);
+      });
 
-      // 2. Check user presets first
+      // 2. Check custom records first (user-defined presets)
+      addLog(`Checking custom records...`, 'info');
+      const customMatch = await findCustomRecordMatch(originalImageSrc);
+
+      if (customMatch) {
+        addLog(`Custom record match found! Simulating analysis...`, 'success');
+        const duration = customMatch.duration || 1500;
+
+        // Simulate processing with custom logs if available
+        if (customMatch.customLogs && customMatch.customLogs.length > 0) {
+          const logDelay = duration / customMatch.customLogs.length;
+          for (const log of customMatch.customLogs) {
+            await new Promise(r => setTimeout(r, logDelay));
+            addLog(log.message, log.type);
+          }
+        } else {
+          await new Promise(r => setTimeout(r, duration));
+        }
+
+        const updatedItem: HistoryItem = {
+          ...tempHistoryItem!,
+          result: customMatch.result!,
+          imageSrc: customMatch.imageSrc,
+          zoomImageSrc: customMatch.zoomImageSrc,
+          status: 'success',
+        };
+
+        setHistory(prev => prev.map(item =>
+          item.id === historyId ? updatedItem : item
+        ));
+        void saveHistoryItem(updatedItem).catch((error) => {
+          console.warn('[History] Failed to persist item:', error);
+        });
+        return;
+      }
+
+      // 3. Check user presets
       addLog(`Checking user presets...`, 'info');
-      const presetMatch = await findPresetMatch(base64);
+      const presetMatch = await findPresetMatch(originalImageSrc);
 
       if (presetMatch) {
         addLog(`Preset match found! Using predefined result.`, 'success');
@@ -117,6 +166,14 @@ const App: React.FC = () => {
           confidence: presetMatch.confidence,
         };
 
+        const updatedItem: HistoryItem = {
+          ...tempHistoryItem!,
+          result: presetResult,
+          imageSrc: presetMatch.outputImageSrc,
+          zoomImageSrc: presetMatch.zoomImageSrc,
+          status: 'success',
+        };
+
         setHistory(prev => prev.map(item =>
           item.id === historyId ? {
             ...item,
@@ -126,12 +183,15 @@ const App: React.FC = () => {
             status: 'success'
           } : item
         ));
+        void saveHistoryItem(updatedItem).catch((error) => {
+          console.warn('[History] Failed to persist item:', error);
+        });
         return;
       }
 
       // 3. Check cache (for offline demo)
       addLog(`Checking local cache...`, 'info');
-      const cached = await findCachedResult(base64);
+      const cached = await findCachedResult(originalImageSrc);
 
       if (cached) {
         // Cache hit - use pre-generated result
@@ -146,6 +206,13 @@ const App: React.FC = () => {
         }
 
         // Update history with cached result and pre-generated result image
+        const updatedItem: HistoryItem = {
+          ...tempHistoryItem!,
+          result,
+          imageSrc: cached.resultImageUrl,
+          status: 'success',
+        };
+
         setHistory(prev => prev.map(item =>
           item.id === historyId ? {
             ...item,
@@ -154,6 +221,9 @@ const App: React.FC = () => {
             status: 'success'
           } : item
         ));
+        void saveHistoryItem(updatedItem).catch((error) => {
+          console.warn('[History] Failed to persist item:', error);
+        });
       } else {
         // Cache miss - call API
         addLog(`Cache miss. Calling vision API...`, 'info');
@@ -171,7 +241,7 @@ const App: React.FC = () => {
 
         // API Call
         const startTime = Date.now();
-        const result = await detectAnomaly(base64, lang);
+        const result = await detectAnomaly(originalImageSrc, lang);
         const latency = Date.now() - startTime;
 
         addLog(`Model inference complete (${latency}ms).`, 'success');
@@ -182,30 +252,45 @@ const App: React.FC = () => {
         }
 
         // Update History Item with Result
+        const updatedItem: HistoryItem = {
+          ...tempHistoryItem!,
+          result,
+          status: 'success',
+        };
+
         setHistory(prev => prev.map(item =>
           item.id === historyId ? { ...item, result: result, status: 'success' } : item
         ));
+        void saveHistoryItem(updatedItem).catch((error) => {
+          console.warn('[History] Failed to persist item:', error);
+        });
       }
 
     } catch (err) {
       console.error(err);
       addLog(`Analysis failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error');
+      const failedItem: HistoryItem | null = tempHistoryItem ? { ...tempHistoryItem, status: 'error', result: null } : null;
       setHistory(prev => prev.map(item => 
         item.id === historyId ? { ...item, status: 'error' } : item
       ));
+      if (failedItem) {
+        void saveHistoryItem(failedItem).catch((error) => {
+          console.warn('[History] Failed to persist item:', error);
+        });
+      }
     } finally {
       setIsProcessingQueue(false);
     }
   }, [queue, isProcessingQueue, lang, addLog]);
 
-  // Auto-process queue effect
+  // Auto-process queue effect (only when there's no pending files)
   useEffect(() => {
-    if (queue.length > 0 && !isProcessingQueue) {
+    if (queue.length > 0 && !isProcessingQueue && pendingFiles.length === 0) {
       processQueue();
     }
-  }, [queue, isProcessingQueue, processQueue]);
+  }, [queue, isProcessingQueue, processQueue, pendingFiles]);
 
-  const handleFilesSelected = (files: File[]) => {
+  const handleFilesSelected = async (files: File[]) => {
     const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     const validFiles = files.filter(file => {
       if (file.size > MAX_FILE_SIZE) {
@@ -216,13 +301,43 @@ const App: React.FC = () => {
     });
 
     if (validFiles.length > 0) {
-      addLog(`Received ${validFiles.length} file(s) to queue.`, 'info');
-      setQueue(prev => [...prev, ...validFiles]);
+      const pending: { file: File; preview: string }[] = [];
+      for (const file of validFiles) {
+        const preview = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
+        pending.push({ file, preview });
+      }
+      setPendingFiles(pending);
+      addLog(`${validFiles.length} file(s) ready. Click to start.`, 'info');
     }
+  };
+
+  const handleConfirmAnalysis = () => {
+    if (pendingFiles.length > 0) {
+      setQueue(prev => [...pendingFiles.map(p => p.file), ...prev]);
+      setPendingFiles([]);
+    }
+  };
+
+  const handleCancelPending = () => {
+    setPendingFiles([]);
+    addLog('Analysis cancelled.', 'info');
   };
 
   const handleSelectHistory = (item: HistoryItem) => {
     setCurrentHistoryId(item.id);
+    setSelectedCustomItem(null);
+  };
+
+  const handleSelectCustomRecord = (item: HistoryItem) => {
+    setSelectedCustomItem(item);
+    setCurrentHistoryId(null);
+    if (item.customLogs) {
+      setLogs(item.customLogs);
+    }
   };
 
   const handleClearHistory = () => {
@@ -230,6 +345,9 @@ const App: React.FC = () => {
       setHistory([]);
       setCurrentHistoryId(null);
       addLog('History cleared', 'info');
+      void clearHistoryItems().catch((error) => {
+        console.warn('[History] Failed to clear history:', error);
+      });
     }
   };
 
@@ -241,191 +359,286 @@ const App: React.FC = () => {
       }
       return newHistory;
     });
+    void deleteHistoryItem(id).catch((error) => {
+      console.warn('[History] Failed to delete history item:', error);
+    });
   };
 
-  const currentItem = history.find(h => h.id === currentHistoryId);
+  const currentItem = selectedCustomItem || history.find(h => h.id === currentHistoryId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50/30 flex flex-col font-sans text-slate-900 selection:bg-indigo-500/30">
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50/20 flex flex-col font-sans text-slate-900 selection:bg-indigo-500/30 overflow-hidden">
       
       {/* Navbar */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-50">
-        <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
-          <button 
-            onClick={() => setCurrentHistoryId(null)}
-            className="flex items-center gap-3 group focus:outline-none"
-            aria-label="Go to home"
-          >
-            <div className="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/30 group-hover:shadow-indigo-500/50 transition-all duration-300 group-hover:scale-105">
-              <Grid className="w-5 h-5 text-white" />
-            </div>
-            <div className="text-left">
-              <h1 className="text-xl font-bold tracking-tight text-slate-800 group-hover:text-indigo-900 transition-colors">
-                Odd<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-violet-500">One</span>Out
-              </h1>
-              <p className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">{t.subtitle}</p>
-            </div>
-          </button>
-          
+      <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 z-50 shadow-sm flex-none h-14 lg:h-16">
+        <div className="w-full px-4 h-full flex items-center justify-between">
           <div className="flex items-center gap-4">
+             {/* Toggle Sidebar Button */}
+             <button
+              onClick={() => setHistorySidebarOpen(!historySidebarOpen)}
+              className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-indigo-600 transition-colors"
+              title={historySidebarOpen ? "Hide History" : "Show History"}
+            >
+              {historySidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
+            </button>
+
+            <button 
+              onClick={() => setCurrentHistoryId(null)}
+              className="flex items-center gap-3 group focus:outline-none"
+              aria-label="Go to home"
+            >
+              <div className="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2 rounded-lg shadow-lg shadow-indigo-500/30 group-hover:shadow-indigo-500/50 transition-all duration-300 group-hover:scale-105">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <div className="text-left hidden sm:block">
+                <h1 className="text-lg font-bold tracking-tight text-slate-800 group-hover:text-indigo-900 transition-colors">
+                  {lang === 'zh' ? '智能医药分析系统' : 'Smart Pharma Analyzer'}
+                </h1>
+              </div>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
              <button
               onClick={() => setTutorialOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-slate-100 transition-all text-sm font-medium text-slate-600 hover:text-indigo-600 border border-transparent hover:border-slate-200"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-all text-sm font-semibold text-slate-600 hover:text-indigo-600 active:scale-95"
               aria-label="Open tutorial"
             >
                <BookOpen className="w-4 h-4" />
-               {t.tutorial}
+               <span className="hidden sm:inline">{t.tutorial}</span>
              </button>
              <button
               onClick={() => setSettingsOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-slate-100 transition-all text-sm font-medium text-slate-600 hover:text-indigo-600 border border-transparent hover:border-slate-200"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-all text-sm font-semibold text-slate-600 hover:text-indigo-600 active:scale-95"
             >
                <Settings className="w-4 h-4" />
-               {t.settings || 'Settings'}
+               <span className="hidden sm:inline">{t.settings || 'Settings'}</span>
              </button>
              <button
               onClick={() => setLang(prev => prev === 'en' ? 'zh' : 'en')}
-              className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-slate-100 transition-all text-sm font-medium text-slate-600 hover:text-indigo-600 border border-transparent hover:border-slate-200"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-all text-sm font-semibold text-slate-600 hover:text-indigo-600 active:scale-95"
             >
                <Languages className="w-4 h-4" />
-               {t.switchLang}
+               <span className="uppercase">{lang}</span>
              </button>
           </div>
         </div>
       </header>
 
-      {/* Main Dashboard Layout */}
-      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* Main Content Area with Flex */}
+      <div className="flex-1 flex overflow-hidden">
         
-        {/* Left Column: Visualizer (8 cols) */}
-        <div
-          className="lg:col-span-8 flex flex-col h-[calc(100vh-9rem)] min-h-[600px]"
-          onDrop={(e: React.DragEvent) => {
-            e.preventDefault();
-            const files = Array.from(e.dataTransfer.files).filter((f: File) => f.type.startsWith('image/'));
-            if (files.length > 0) handleFilesSelected(files);
-          }}
-          onDragOver={(e: React.DragEvent) => e.preventDefault()}
+        {/* History Sidebar - Docked */}
+        <div 
+          className={`flex-none bg-white/80 backdrop-blur-xl border-r border-slate-200/60 z-40 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden flex flex-col ${
+            historySidebarOpen ? 'w-[280px] opacity-100' : 'w-0 opacity-0'
+          }`}
         >
-          {currentItem ? (
-            <ResultViewer 
-              imageSrc={currentItem.imageSrc}
-              result={currentItem.result}
-              isAnalyzing={!currentItem.result && currentItem.status !== 'error'}
-              lang={lang}
-            />
-          ) : (
-            <div className="flex-1 bg-white/60 backdrop-blur-sm rounded-[2rem] border border-white/50 shadow-xl shadow-indigo-100/50 flex flex-col items-center justify-center p-12 text-center animate-in fade-in zoom-in-95 duration-700">
-              <div className="bg-gradient-to-br from-white to-slate-50 p-8 rounded-full mb-8 shadow-inner border border-slate-100 ring-8 ring-white/50">
-                <Grid className="w-16 h-16 text-indigo-200" />
-              </div>
-              <h2 className="text-3xl font-bold text-slate-800 mb-3 tracking-tight">{t.title}</h2>
-              <p className="text-slate-500 max-w-md mb-10 text-lg leading-relaxed">{t.uploadDesc}</p>
-              <div className="w-full max-w-lg pointer-events-auto transform hover:scale-[1.01] transition-transform duration-300">
-                 <UploadZone onFilesSelected={handleFilesSelected} lang={lang} />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: Controls & Logs (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-6 h-[calc(100vh-9rem)] min-h-[600px] overflow-y-auto">
-
-          {/* 1. Upload & Queue Status */}
-          <div className="bg-white/80 backdrop-blur-sm p-5 rounded-[1.5rem] border border-white/60 shadow-lg shadow-indigo-100/40 flex-shrink-0">
-             <div className="flex justify-between items-center mb-4">
-               <h3 className="font-bold text-slate-700 tracking-tight">{t.queue}</h3>
-               {queue.length > 0 && (
-                 <span className="text-xs bg-indigo-500 text-white px-2.5 py-1 rounded-full animate-pulse font-bold shadow-md shadow-indigo-200">
-                   {queue.length} pending
-                 </span>
-               )}
-             </div>
-             
-             {/* Mini Upload Button */}
-             <div className="relative group">
-               <input 
-                  type="file" 
-                  multiple 
-                  accept="image/*" 
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                  onChange={(e) => {
-                    if(e.target.files) handleFilesSelected(Array.from(e.target.files));
-                  }}
-               />
-               <button className="w-full py-3.5 bg-slate-900 group-hover:bg-indigo-600 text-white rounded-xl flex items-center justify-center gap-2.5 transition-all duration-300 shadow-md group-hover:shadow-indigo-200 group-active:scale-[0.98]">
-                 <Plus className="w-4 h-4" />
-                 <span className="font-medium">{t.uploadTitle}</span>
-               </button>
-             </div>
-          </div>
-
-          {/* 2. Log Terminal */}
-          <LogTerminal logs={logs} lang={lang} />
-
-          {/* 3. Anomaly Detail */}
-          <AnomalyDetail
-            result={currentItem?.result ?? null}
-            isAnalyzing={currentItem ? (!currentItem.result && currentItem.status !== 'error') : false}
-            lang={lang}
-            imageSrc={currentItem?.imageSrc}
-            zoomImageSrc={currentItem?.zoomImageSrc}
-            isEmpty={!currentItem}
-          />
-
-        </div>
-
-      </main>
-
-      {/* History Sidebar */}
-      <div className={`fixed top-0 left-0 h-full bg-white/95 backdrop-blur-xl border-r border-slate-200 shadow-2xl z-50 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${historySidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{ width: '340px' }}>
-        <div className="h-full flex flex-col">
-          <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white/50">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2.5 text-lg">
-              <History className="w-5 h-5 text-indigo-500" />
+          <div className="p-3 border-b border-slate-100/50 flex items-center bg-white/40 flex-shrink-0">
+            <h3 className="font-bold text-slate-800 flex items-center gap-2 text-sm tracking-tight w-full">
+              <History className="w-4 h-4 text-indigo-500" />
               {t.history}
             </h3>
-            <button onClick={() => setHistorySidebarOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors group">
-              <ChevronLeft className="w-5 h-5 text-slate-400 group-hover:text-slate-700 transition-colors" />
-            </button>
           </div>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
             <HistoryList
               history={history}
               currentId={currentHistoryId}
-              onSelect={(item) => { handleSelectHistory(item); setHistorySidebarOpen(false); }}
+              onSelect={(item) => { handleSelectHistory(item); }}
               onClearHistory={handleClearHistory}
               onDeleteItem={handleDeleteHistoryItem}
               lang={lang}
             />
           </div>
         </div>
+
+        {/* Workspace */}
+        <main className="flex-1 min-w-0 p-3 lg:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 h-full overflow-hidden">
+          
+          {/* Left Column: Visualizer (8 cols) */}
+          <div
+            className="lg:col-span-8 flex flex-col h-full overflow-hidden min-h-0"
+            onDrop={(e: React.DragEvent) => {
+              e.preventDefault();
+              const files = Array.from(e.dataTransfer.files) as File[];
+              const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+              if (imageFiles.length > 0) handleFilesSelected(imageFiles);
+            }}
+            onDragOver={(e: React.DragEvent) => e.preventDefault()}
+          >
+            {pendingFiles.length > 0 ? (
+              <div className="flex-1 bg-white/80 backdrop-blur-md rounded-2xl border border-white/60 shadow-xl shadow-indigo-100/50 flex flex-col items-center justify-center p-6 text-center">
+                {pendingFiles.length === 1 ? (
+                  // Single file preview
+                  <div className="w-full max-w-md">
+                    <div className="aspect-square rounded-xl overflow-hidden border border-slate-200 shadow-lg mb-4">
+                      <img src={pendingFiles[0].preview} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                    <p className="text-sm text-slate-600 mb-4 font-medium">{pendingFiles[0].file.name}</p>
+                    <div className="flex gap-3 justify-center">
+                      <button
+                        onClick={handleCancelPending}
+                        className="px-6 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                      >
+                        {lang === 'zh' ? '取消' : 'Cancel'}
+                      </button>
+                      <button
+                        onClick={handleConfirmAnalysis}
+                        className="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-lg shadow-indigo-200"
+                      >
+                        {lang === 'zh' ? '开始检测' : 'Start Analysis'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  // Multiple files preview
+                  <div className="w-full max-w-lg">
+                    <div className="grid grid-cols-3 gap-2 mb-4 max-h-[300px] overflow-y-auto p-2">
+                      {pendingFiles.slice(0, 9).map((pf, idx) => (
+                        <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                          <img src={pf.preview} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                      {pendingFiles.length > 9 && (
+                        <div className="aspect-square rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center">
+                          <span className="text-slate-500 font-medium">+{pendingFiles.length - 9}</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-600 mb-4 font-medium">
+                      {lang === 'zh' ? `已选择 ${pendingFiles.length} 张图片` : `${pendingFiles.length} images selected`}
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                      <button
+                        onClick={handleCancelPending}
+                        className="px-6 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                      >
+                        {lang === 'zh' ? '取消' : 'Cancel'}
+                      </button>
+                      <button
+                        onClick={handleConfirmAnalysis}
+                        className="px-6 py-2.5 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-colors shadow-lg shadow-violet-200"
+                      >
+                        {lang === 'zh' ? '批量分析' : 'Batch Analysis'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : currentItem ? (
+              <ResultViewer
+                imageSrc={currentItem.imageSrc}
+                result={currentItem.result}
+                isAnalyzing={!currentItem.result && currentItem.status !== 'error'}
+                lang={lang}
+              />
+            ) : (
+              <div className="flex-1 bg-white/60 backdrop-blur-md rounded-2xl border border-white/50 shadow-xl shadow-indigo-100/50 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in-95 duration-500">
+                <div className="relative group cursor-default">
+                  <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                  <div className="relative bg-gradient-to-br from-white to-slate-50 p-6 rounded-2xl mb-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white ring-1 ring-slate-900/5 group-hover:-translate-y-1 transition-transform duration-500">
+                    <Grid className="w-12 h-12 text-indigo-500/80 group-hover:text-indigo-600 transition-colors" />
+                  </div>
+                </div>
+                
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2 tracking-tight">{t.title}</h2>
+                <p className="text-slate-500 max-w-sm mb-8 text-base leading-relaxed font-medium">{t.uploadDesc}</p>
+                
+                <div className="w-full max-w-md pointer-events-auto transform hover:scale-[1.01] transition-transform duration-300">
+                   <UploadZone onFilesSelected={handleFilesSelected} lang={lang} />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column: Controls & Logs (4 cols) */}
+          <div className="lg:col-span-4 flex flex-col gap-3 h-full overflow-hidden min-h-0">
+
+            {/* 1. Upload & Queue Status - Compact */}
+            <div className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/60 shadow-lg shadow-indigo-100/40 flex-shrink-0 flex items-center justify-between gap-3">
+               <div className="flex items-center gap-2">
+                 <h3 className="font-bold text-slate-700 tracking-tight text-sm whitespace-nowrap">
+                   {t.queue}
+                 </h3>
+                 {queue.length > 0 && (
+                   <span className="text-[10px] bg-indigo-500 text-white px-2 py-0.5 rounded-full animate-pulse font-bold shadow-md shadow-indigo-200">
+                     {queue.length}
+                   </span>
+                 )}
+               </div>
+
+               <div className="flex items-center gap-2">
+                 {/* Single Upload Button */}
+                 <div className="relative group">
+                   <input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                      onChange={(e) => {
+                        if(e.target.files && e.target.files.length > 0) {
+                          handleFilesSelected([e.target.files[0]]);
+                        }
+                      }}
+                   />
+                   <button className="px-3 py-2 bg-indigo-600 group-hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center gap-1.5 transition-all duration-300 shadow-lg shadow-indigo-200 group-active:scale-[0.98]">
+                     <Plus className="w-3.5 h-3.5" />
+                     <span className="font-bold text-xs tracking-wide">{lang === 'zh' ? '单张' : 'Single'}</span>
+                   </button>
+                 </div>
+
+                 {/* Batch Upload Button */}
+                 <div className="relative group">
+                   <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                      onChange={(e) => {
+                        if(e.target.files) handleFilesSelected(Array.from(e.target.files));
+                      }}
+                   />
+                   <button className="px-3 py-2 bg-violet-600 group-hover:bg-violet-700 text-white rounded-xl flex items-center justify-center gap-1.5 transition-all duration-300 shadow-lg shadow-violet-200 group-active:scale-[0.98]">
+                     <Plus className="w-3.5 h-3.5" />
+                     <span className="font-bold text-xs tracking-wide">{lang === 'zh' ? '批量' : 'Batch'}</span>
+                   </button>
+                 </div>
+               </div>
+            </div>
+
+            {/* 2. Anomaly Detail - Compact, auto height */}
+            <div className="flex-1 min-h-0 flex flex-col">
+              <AnomalyDetail
+                result={currentItem?.result ?? null}
+                isAnalyzing={currentItem ? (!currentItem.result && currentItem.status !== 'error') : false}
+                lang={lang}
+                imageSrc={currentItem?.imageSrc}
+                zoomImageSrc={currentItem?.zoomImageSrc}
+                isEmpty={!currentItem}
+              />
+            </div>
+
+            {/* 3. Log Terminal - Collapsible & Small by default */}
+            <div className="flex-shrink-0">
+              <LogTerminal logs={logs} lang={lang} />
+            </div>
+
+          </div>
+
+        </main>
       </div>
 
-      {/* History Toggle Button */}
-      <button
-        onClick={() => setHistorySidebarOpen(true)}
-        className={`fixed left-0 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur border border-slate-200 text-indigo-600 pl-1 pr-1.5 py-6 rounded-r-2xl shadow-[4px_0_24px_-4px_rgba(0,0,0,0.1)] hover:pl-2 transition-all duration-300 z-40 group ${historySidebarOpen ? 'opacity-0 pointer-events-none translate-x-[-20px]' : 'opacity-100 translate-x-0'}`}
-      >
-        <div className="flex flex-col items-center gap-3">
-          <ChevronRight className="w-5 h-5 group-hover:scale-125 transition-transform" />
-          <span className="text-[10px] font-bold tracking-widest uppercase [writing-mode:vertical-rl] text-slate-400 group-hover:text-indigo-600 transition-colors">{t.history}</span>
-          {history.length > 0 && (
-            <span className="bg-indigo-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md shadow-indigo-200">{history.length}</span>
-          )}
-        </div>
-      </button>
-
-      {/* Backdrop */}
-      {historySidebarOpen && (
-        <div className="fixed inset-0 bg-black/20 z-40" onClick={() => setHistorySidebarOpen(false)} />
-      )}
-
       {/* Settings Modal */}
-      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} t={t} lang={lang} />
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} t={t} lang={lang} onOpenCustomRecords={() => setCustomRecordsOpen(true)} />
 
       {/* Tutorial Modal */}
       <TutorialModal isOpen={tutorialOpen} onClose={() => setTutorialOpen(false)} t={t} />
+
+      {/* Custom Records Modal */}
+      <CustomHistoryViewModal
+        isOpen={customRecordsOpen}
+        onClose={() => setCustomRecordsOpen(false)}
+        lang={lang}
+      />
     </div>
   );
 };

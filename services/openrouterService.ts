@@ -43,8 +43,8 @@ export const detectAnomaly = async (base64Image: string, lang: Language): Promis
 
     // 2. API Call
     const prompt = lang === 'zh'
-      ? `找出网格中的异类(颜色/破损/形状不同)。返回JSON:{"found":bool,"gridSize":{"rows":n,"cols":n},"anomalyPosition":{"row":n,"col":n},"boundingBox":{"ymin":0-1000,"xmin":0-1000,"ymax":0-1000,"xmax":0-1000},"reason":"简短原因","description":"简短描述","confidence":0-1}`
-      : `Find the odd one out (color/damage/shape). Return JSON:{"found":bool,"gridSize":{"rows":n,"cols":n},"anomalyPosition":{"row":n,"col":n},"boundingBox":{"ymin":0-1000,"xmin":0-1000,"ymax":0-1000,"xmax":0-1000},"reason":"brief","description":"brief","confidence":0-1}`;
+      ? `找出网格中的异类(颜色/破损/形状不同)。返回JSON:{"found":bool,"gridSize":{"rows":n,"cols":n},"anomalyPosition":{"row":n,"col":n},"boundingBox":{"ymin":0-1000,"xmin":0-1000,"ymax":0-1000,"xmax":0-1000},"reason":"分析内容","description":"简短描述","confidence":0-1}`
+      : `Find the odd one out (color/damage/shape). Return JSON:{"found":bool,"gridSize":{"rows":n,"cols":n},"anomalyPosition":{"row":n,"col":n},"boundingBox":{"ymin":0-1000,"xmin":0-1000,"ymax":0-1000,"xmax":0-1000},"reason":"analysis","description":"brief","confidence":0-1}`;
 
     // 添加请求超时控制
     const controller = new AbortController();

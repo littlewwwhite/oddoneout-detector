@@ -2,8 +2,8 @@ import { Language } from "../types";
 
 export const TRANSLATIONS = {
   en: {
-    title: "OddOneOut",
-    subtitle: "Detector",
+    title: "Smart Pharma Analyzer",
+    subtitle: "",
     uploadTitle: "Batch Analysis",
     uploadDesc: "Drag & drop multiple images or click to browse",
     processing: "Processing...",
@@ -13,7 +13,7 @@ export const TRANSLATIONS = {
     logs: "System Logs",
     confidence: "Confidence",
     gridSize: "Grid Size",
-    reason: "Anomaly Reason",
+    reason: "Analysis",
     description: "Scene Description",
     perfect: "Perfect Grid",
     perfectDesc: "No anomalies detected. All objects appear consistent.",
@@ -75,11 +75,16 @@ export const TRANSLATIONS = {
     selectOutputImage: "Select output image",
     advanced: "Advanced",
     presetsDesc: "Custom input-output mappings",
-    deleteItem: "Delete"
+    deleteItem: "Delete",
+    customHistory: "Custom Entry",
+    analysisSuggestion: "Analysis Suggestion",
+    analysisDuration: "Analysis Duration",
+    customLogs: "Custom Logs",
+    detectionResult: "Detection Result"
   },
   zh: {
-    title: "AI 药丸异常判断",
-    subtitle: "AI 药丸异常判断系统",
+    title: "智能医药分析系统",
+    subtitle: "",
     uploadTitle: "批量分析",
     uploadDesc: "拖拽多张图片或点击上传",
     processing: "处理中...",
@@ -89,7 +94,7 @@ export const TRANSLATIONS = {
     logs: "系统日志",
     confidence: "置信度",
     gridSize: "网格尺寸",
-    reason: "异常原因",
+    reason: "分析",
     description: "场景描述",
     perfect: "全部正确",
     perfectDesc: "未检测到异常。所有物体看起来一致。",
@@ -151,7 +156,12 @@ export const TRANSLATIONS = {
     selectOutputImage: "选择输出图片",
     advanced: "高级功能",
     presetsDesc: "自定义输入输出映射",
-    deleteItem: "删除"
+    deleteItem: "删除",
+    customHistory: "自定义记录",
+    analysisSuggestion: "分析建议",
+    analysisDuration: "分析时长",
+    customLogs: "自定义日志",
+    detectionResult: "检测结果"
   }
 };
 
