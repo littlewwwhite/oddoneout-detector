@@ -21,15 +21,19 @@ export interface DetectionResult {
   description: string;
   reason: string;
   confidence: number; // 0.0 to 1.0
+  suggestion?: string; // analysis suggestion
 }
 
 export interface HistoryItem {
   id: string;
   timestamp: number;
-  imageSrc: string;
+  imageSrc: string; // output/result image
+  originalImageSrc?: string; // original input image (for custom entries)
   result: DetectionResult | null; // null if error or processing
   status: 'success' | 'error' | 'processing';
   zoomImageSrc?: string; // optional zoomed view image from preset
+  duration?: number; // analysis duration in milliseconds
+  customLogs?: LogEntry[]; // custom log entries for manual input
 }
 
 export interface LogEntry {
