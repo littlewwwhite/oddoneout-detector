@@ -25,6 +25,13 @@ const checkCustomOverrides = (base64Data: string): DetectionResult | null => {
 
 export const detectAnomaly = async (base64Image: string, lang: Language): Promise<DetectionResult> => {
   try {
+    // Quick offline check - fail fast instead of waiting for timeout
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      throw new Error(lang === 'zh'
+        ? '当前处于离线状态，无法调用 AI 服务。请检查网络连接或使用预设/缓存数据。'
+        : 'You are offline. Cannot call AI service. Please check your network or use preset/cached data.');
+    }
+
     // 确保 base64 数据包含 data URL 前缀
     let imageData = base64Image;
     if (!imageData.startsWith('data:image/')) {
@@ -167,6 +174,10 @@ export const detectAnomaly = async (base64Image: string, lang: Language): Promis
     if (error instanceof Error && error.name === 'AbortError') {
       console.error("Request timeout after 60 seconds");
       throw new Error("Request timeout - The API took too long to respond. Please try again with a smaller image or check your network connection.");
+    }
+    // 处理网络错误 - 快速失败
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error("Network error - Unable to reach the API server. Please check your internet connection.");
     }
     console.error("Error identifying anomaly:", error);
     throw error;

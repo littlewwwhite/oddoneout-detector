@@ -32,6 +32,18 @@ function computeBase64Hash(base64: string): string {
   return simpleHash(sample);
 }
 
+export interface CacheLoadResult {
+  success: boolean;
+  count: number;
+  error?: string;
+}
+
+let lastLoadResult: CacheLoadResult | null = null;
+
+export function getCacheLoadResult(): CacheLoadResult | null {
+  return lastLoadResult;
+}
+
 export async function loadCacheIndex(): Promise<void> {
   if (cacheIndex) return;
   if (cacheLoading) return cacheLoading;
@@ -49,14 +61,22 @@ export async function loadCacheIndex(): Promise<void> {
 
       if (response.ok) {
         cacheIndex = await response.json();
-        console.log(`[Cache] Loaded ${Object.keys(cacheIndex!.entries).length} cached results`);
+        const count = Object.keys(cacheIndex!.entries).length;
+        console.log(`[Cache] Loaded ${count} cached results`);
+        lastLoadResult = { success: true, count };
       } else {
+        console.warn(`[Cache] index.json not found (${response.status}), offline cache unavailable`);
         cacheIndex = { version: '1.0', entries: {} };
+        lastLoadResult = { success: false, count: 0, error: `HTTP ${response.status}` };
       }
     } catch (err) {
-      // Silently handle network errors (offline mode)
-      if (err instanceof Error && err.name !== 'AbortError') {
-        console.warn('[Cache] Failed to load cache index:', err);
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.warn('[Cache] Load timeout, offline cache unavailable');
+        lastLoadResult = { success: false, count: 0, error: 'Timeout' };
+      } else {
+        console.warn('[Cache] Failed to load cache index:', errorMsg);
+        lastLoadResult = { success: false, count: 0, error: errorMsg };
       }
       cacheIndex = { version: '1.0', entries: {} };
     } finally {

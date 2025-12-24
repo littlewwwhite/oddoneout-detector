@@ -5,10 +5,11 @@ import { LogTerminal } from './components/LogTerminal';
 import { HistoryList } from './components/HistoryList';
 import { AnomalyDetail } from './components/AnomalyDetail';
 import { detectAnomaly } from './services/openrouterService';
-import { findCachedResult, loadCacheIndex } from './services/cacheService';
+import { findCachedResult, loadCacheIndex, getCacheLoadResult } from './services/cacheService';
 import { findPresetMatch } from './services/presetService';
 import { AppState, DetectionResult, Language, HistoryItem, LogEntry } from './types';
-import { Grid, Languages, Plus, History, ChevronLeft, ChevronRight, Settings, BookOpen, Sparkles, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Grid, Languages, Plus, History, ChevronLeft, ChevronRight, Settings, BookOpen, Sparkles, PanelLeftClose, PanelLeftOpen, WifiOff } from 'lucide-react';
+import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { getT } from './constants/translations';
 import { SettingsModal } from './components/SettingsModal';
 import { TutorialModal } from './components/TutorialModal';
@@ -19,6 +20,7 @@ import { findCustomRecordMatch } from './services/customRecordStore';
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('zh'); // Default to Chinese
   const t = getT(lang);
+  const isOnline = useOnlineStatus();
 
   const [queue, setQueue] = useState<File[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -35,7 +37,18 @@ const App: React.FC = () => {
 
   // Load history and preload cache index on mount
   useEffect(() => {
-    loadCacheIndex();
+    // Load cache and report result
+    void (async () => {
+      await loadCacheIndex();
+      const cacheResult = getCacheLoadResult();
+      if (cacheResult) {
+        if (cacheResult.success) {
+          addLog(`Offline cache loaded: ${cacheResult.count} entries available`, 'success');
+        } else {
+          addLog(`Offline cache unavailable: ${cacheResult.error || 'unknown error'}`, 'warning');
+        }
+      }
+    })();
 
     let cancelled = false;
     void (async () => {
@@ -392,6 +405,13 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
+             {/* Offline Indicator */}
+             {!isOnline && (
+               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-sm font-medium">
+                 <WifiOff className="w-4 h-4" />
+                 <span>{lang === 'zh' ? '离线模式' : 'Offline'}</span>
+               </div>
+             )}
              <button
               onClick={() => setTutorialOpen(true)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-all text-sm font-semibold text-slate-600 hover:text-indigo-600 active:scale-95"
