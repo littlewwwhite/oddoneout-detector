@@ -15,34 +15,21 @@ interface CacheIndex {
 let cacheIndex: CacheIndex | null = null;
 let cacheLoading: Promise<void> | null = null;
 
-async function computeMD5(buffer: ArrayBuffer): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-  // Use first 16 bytes to simulate MD5 length
-  const hashArray = Array.from(new Uint8Array(hashBuffer)).slice(0, 16);
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-// Simple hash based on file content sampling for fast matching
-async function computeImageHash(file: File): Promise<string> {
-  const buffer = await file.arrayBuffer();
-  // Use Web Crypto API for hashing
-  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
-}
-
-// Alternative: compute hash from base64 string
-async function computeBase64Hash(base64: string): Promise<string> {
-  // Extract pure base64 data
-  const pureBase64 = base64.replace(/^data:image\/\w+;base64,/, '');
-  const binaryString = atob(pureBase64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
+// Simple hash function that works without crypto.subtle
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
   }
-  const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+  return Math.abs(hash).toString(16).padStart(8, '0');
+}
+
+function computeBase64Hash(base64: string): string {
+  const pureBase64 = base64.replace(/^data:image\/\w+;base64,/, '');
+  const sample = pureBase64.slice(0, 1000) + pureBase64.slice(-1000) + pureBase64.length;
+  return simpleHash(sample);
 }
 
 export async function loadCacheIndex(): Promise<void> {
@@ -51,14 +38,30 @@ export async function loadCacheIndex(): Promise<void> {
 
   cacheLoading = (async () => {
     try {
-      const response = await fetch('/cache/index.json');
+      // Use AbortController with timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const response = await fetch('/cache/index.json', {
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
       if (response.ok) {
         cacheIndex = await response.json();
         console.log(`[Cache] Loaded ${Object.keys(cacheIndex!.entries).length} cached results`);
+      } else {
+        cacheIndex = { version: '1.0', entries: {} };
       }
     } catch (err) {
-      console.warn('[Cache] Failed to load cache index:', err);
+      // Silently handle network errors (offline mode)
+      if (err instanceof Error && err.name !== 'AbortError') {
+        console.warn('[Cache] Failed to load cache index:', err);
+      }
       cacheIndex = { version: '1.0', entries: {} };
+    } finally {
+      // Reset loading state to allow retry if needed
+      cacheLoading = null;
     }
   })();
 
@@ -75,7 +78,7 @@ export async function findCachedResult(base64Image: string): Promise<CachedResul
   if (!cacheIndex) return null;
 
   // Compute hash of the uploaded image
-  const hash = await computeBase64Hash(base64Image);
+  const hash = computeBase64Hash(base64Image);
 
   // Look up in cache
   const entry = cacheIndex.entries[hash];

@@ -74,7 +74,8 @@ export const TRANSLATIONS = {
     selectInputImage: "Select input image",
     selectOutputImage: "Select output image",
     advanced: "Advanced",
-    presetsDesc: "Custom input-output mappings"
+    presetsDesc: "Custom input-output mappings",
+    deleteItem: "Delete"
   },
   zh: {
     title: "AI 药丸异常判断",
@@ -149,7 +150,8 @@ export const TRANSLATIONS = {
     selectInputImage: "选择输入图片",
     selectOutputImage: "选择输出图片",
     advanced: "高级功能",
-    presetsDesc: "自定义输入输出映射"
+    presetsDesc: "自定义输入输出映射",
+    deleteItem: "删除"
   }
 };
 
