@@ -27,6 +27,8 @@ export const CustomHistoryViewModal: React.FC<CustomHistoryViewModalProps> = ({
   const [confidence, setConfidence] = useState(0.95);
   const [suggestion, setSuggestion] = useState('');
   const [duration, setDuration] = useState(1500);
+  const [rows, setRows] = useState(3);
+  const [cols, setCols] = useState(3);
   const [logs, setLogs] = useState<{ message: string; type: 'info' | 'success' | 'warning' | 'error' }[]>([{ message: '', type: 'info' }]);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -60,6 +62,8 @@ export const CustomHistoryViewModal: React.FC<CustomHistoryViewModalProps> = ({
     setConfidence(0.95);
     setSuggestion('');
     setDuration(1500);
+    setRows(3);
+    setCols(3);
     setLogs([{ message: '', type: 'info' }]);
   };
 
@@ -98,7 +102,7 @@ export const CustomHistoryViewModal: React.FC<CustomHistoryViewModalProps> = ({
       customLogs: customLogs.length > 0 ? customLogs : undefined,
       result: {
         found,
-        gridSize: { rows: 3, cols: 3 },
+        gridSize: { rows, cols },
         description: reason,
         reason,
         confidence,
@@ -169,7 +173,7 @@ export const CustomHistoryViewModal: React.FC<CustomHistoryViewModalProps> = ({
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="text-xs font-medium text-slate-600 mb-1 block">{isZh ? '结果' : 'Result'}</label>
             <div className={`py-2 px-3 rounded-lg border text-sm ${viewingItem.result?.found ? 'border-red-300 bg-red-50 text-red-700' : 'border-green-300 bg-green-50 text-green-700'}`}>
@@ -179,6 +183,10 @@ export const CustomHistoryViewModal: React.FC<CustomHistoryViewModalProps> = ({
           <div>
             <label className="text-xs font-medium text-slate-600 mb-1 block">{isZh ? '置信度' : 'Confidence'}</label>
             <div className="py-2 px-3 rounded-lg border border-slate-200 bg-slate-50 text-sm">{Math.round((viewingItem.result?.confidence || 0) * 100)}%</div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-slate-600 mb-1 block">{isZh ? '行列' : 'Grid'}</label>
+            <div className="py-2 px-3 rounded-lg border border-slate-200 bg-slate-50 text-sm">{viewingItem.result?.gridSize?.rows || 0} x {viewingItem.result?.gridSize?.cols || 0}</div>
           </div>
         </div>
 
@@ -274,6 +282,17 @@ export const CustomHistoryViewModal: React.FC<CustomHistoryViewModalProps> = ({
         <div>
           <label className="text-xs font-medium text-slate-600 mb-1 block">{isZh ? '分析时长' : 'Duration'}: {(duration / 1000).toFixed(1)}s</label>
           <input type="range" min="500" max="10000" step="100" value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="w-full h-2 bg-slate-200 rounded-lg accent-indigo-600" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs font-medium text-slate-600 mb-1 block">{isZh ? '行数' : 'Rows'}</label>
+          <input type="number" min="1" max="20" value={rows} onChange={(e) => setRows(Number(e.target.value))} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-slate-600 mb-1 block">{isZh ? '列数' : 'Cols'}</label>
+          <input type="number" min="1" max="20" value={cols} onChange={(e) => setCols(Number(e.target.value))} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" />
         </div>
       </div>
 
